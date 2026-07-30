@@ -36,6 +36,11 @@ const HostsPanel = lazy(() =>
 const HostsTab = lazy(() =>
   import("@/features/hosts/HostsTab").then((m) => ({ default: m.HostsTab })),
 );
+const CredentialsTab = lazy(() =>
+  import("@/features/credentials/CredentialsTab").then((m) => ({
+    default: m.CredentialsTab,
+  })),
+);
 const DashboardTab = lazy(() =>
   import("@/dashboard/DashboardTab").then((m) => ({ default: m.DashboardTab })),
 );
@@ -2045,6 +2050,25 @@ export function AppShell({
                             openTab(host, type);
                           }}
                           onEditHost={editHostInManager}
+                        />
+                      </Suspense>
+                    ) : railView === "credentials" ? (
+                      <Suspense fallback={<SidebarPanelFallback />}>
+                        <CredentialsTab
+                          onAddCredential={() => {
+                            setRailViewActive(false);
+                            setRailView("credentials");
+                            setSidebarOpen(true);
+                            setTimeout(
+                              () =>
+                                window.dispatchEvent(
+                                  new CustomEvent(
+                                    "host-manager:add-credential",
+                                  ),
+                                ),
+                              0,
+                            );
+                          }}
                         />
                       </Suspense>
                     ) : railView === "dashboard" ? (

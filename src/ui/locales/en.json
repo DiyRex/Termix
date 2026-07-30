@@ -103,7 +103,16 @@
     "filterTypeGroup": "Type",
     "filterTypePassword": "Password",
     "filterTypeKey": "SSH Key",
-    "filterTagsGroup": "Tags"
+    "filterTagsGroup": "Tags",
+    "searchPlaceholder": "Search keychain...",
+    "add": "Add Credential",
+    "keys": "Keys",
+    "passwords": "Passwords",
+    "empty": "No credentials yet",
+    "noMatches": "No credentials match your search.",
+    "typeLabel": "Type",
+    "typeKey": "Key",
+    "typePassword": "Password"
   },
   "homepage": {
     "title": "Homepage",
@@ -1446,7 +1455,22 @@
       "savingBtn": "Saving...",
       "updateHostBtn": "Update Host",
       "addHostBtn": "Add Host"
-    }
+    },
+    "searchPlaceholder": "Find a host or ssh user@hostname...",
+    "newHost": "New Host",
+    "serial": "Serial",
+    "groups": "Groups",
+    "hostsSection": "Hosts",
+    "empty": "No hosts match your search.",
+    "details": "Host Details",
+    "address": "Address",
+    "general": "General",
+    "parentGroup": "Parent Group",
+    "credentials": "Credentials",
+    "edit": "Edit",
+    "noGroup": "No group",
+    "hostSingular": "Host",
+    "hostPlural": "Hosts"
   },
   "commandPalette": {
     "searchPlaceholder": "Search hosts, commands, or settings...",
