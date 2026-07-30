@@ -262,7 +262,7 @@ export function DraggableWindow({
     <div
       ref={windowRef}
       className={cn(
-        "absolute bg-[#0d0e0c] border border-border rounded-none shadow-2xl",
+        "absolute bg-[#0d0e0c] border border-border rounded-md shadow-2xl",
         "select-none overflow-hidden flex flex-col",
         isMaximized ? "inset-0" : "",
       )}
@@ -296,7 +296,7 @@ export function DraggableWindow({
 
           {onMinimize && (
             <button
-              className="size-6 flex items-center justify-center rounded-none hover:bg-accent-brand/10 hover:text-accent-brand text-muted-foreground transition-colors"
+              className="size-6 flex items-center justify-center rounded-md hover:bg-accent-brand/10 hover:text-accent-brand text-muted-foreground transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 onMinimize();
@@ -309,7 +309,7 @@ export function DraggableWindow({
 
           {onMaximize && (
             <button
-              className="size-6 flex items-center justify-center rounded-none hover:bg-accent-brand/10 hover:text-accent-brand text-muted-foreground transition-colors"
+              className="size-6 flex items-center justify-center rounded-md hover:bg-accent-brand/10 hover:text-accent-brand text-muted-foreground transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 onMaximize();
@@ -325,7 +325,7 @@ export function DraggableWindow({
           )}
 
           <button
-            className="size-6 flex items-center justify-center rounded-none hover:bg-accent-brand/10 hover:text-accent-brand text-muted-foreground transition-colors"
+            className="size-6 flex items-center justify-center rounded-md hover:bg-accent-brand/10 hover:text-accent-brand text-muted-foreground transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               onClose();

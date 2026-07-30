@@ -67,7 +67,7 @@ export function CompressDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-md rounded-none border-border bg-card">
+      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-md rounded-md border-border bg-card">
         <DialogHeader>
           <DialogTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
             <Package className="size-4 text-accent-brand" />
@@ -91,7 +91,7 @@ export function CompressDialog({
               value={archiveName}
               onChange={(e) => setArchiveName(e.target.value)}
               placeholder={t("fileManager.enterArchiveName")}
-              className="rounded-none bg-muted/50 border-border text-xs"
+              className="rounded-md bg-muted/50 border-border text-xs"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -122,7 +122,7 @@ export function CompressDialog({
             </div>
           </div>
 
-          <div className="rounded-none bg-muted/10 border border-border p-3">
+          <div className="rounded-md bg-muted/10 border border-border p-3">
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
               {t("fileManager.selectedFiles")}:
             </p>
@@ -150,7 +150,7 @@ export function CompressDialog({
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="rounded-none text-[10px] font-bold uppercase tracking-widest"
+            className="rounded-md text-[10px] font-bold uppercase tracking-widest"
           >
             {t("common.cancel")}
           </Button>
@@ -158,7 +158,7 @@ export function CompressDialog({
             variant="outline"
             onClick={handleCompress}
             disabled={!archiveName.trim()}
-            className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-none text-[10px] font-bold uppercase tracking-widest"
+            className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-md text-[10px] font-bold uppercase tracking-widest"
           >
             <Package className="size-3.5 mr-1" />
             {t("fileManager.compress")}

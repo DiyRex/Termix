@@ -1000,7 +1000,7 @@ export function FileManagerGrid({
                               data-file-path={file.path}
                               draggable={true}
                               className={cn(
-                                "group flex flex-col items-center p-3 rounded-none border-2 border-transparent transition-all cursor-pointer hover:bg-muted/50 select-none",
+                                "group flex flex-col items-center p-3 rounded-md border-2 border-transparent transition-all cursor-pointer hover:bg-muted/50 select-none",
                                 isSelected &&
                                   "bg-accent-brand/10 border-accent-brand/40",
                                 dragState.target?.path === file.path &&
@@ -1036,7 +1036,7 @@ export function FileManagerGrid({
                                     }
                                     onKeyDown={handleEditKeyDown}
                                     onBlur={handleEditConfirm}
-                                    className="max-w-[120px] min-w-[60px] w-fit border border-accent-brand/60 bg-card px-2 py-1 text-xs rounded-none outline-none focus:ring-1 focus:ring-accent-brand/50 text-center pointer-events-auto"
+                                    className="max-w-[120px] min-w-[60px] w-fit border border-accent-brand/60 bg-card px-2 py-1 text-xs rounded-md outline-none focus:ring-1 focus:ring-accent-brand/50 text-center pointer-events-auto"
                                     onClick={(e) => e.stopPropagation()}
                                     onMouseDown={(e) => e.stopPropagation()}
                                   />
@@ -1146,7 +1146,7 @@ export function FileManagerGrid({
                         data-file-path={file.path}
                         draggable={true}
                         className={cn(
-                          "grid grid-cols-[1fr_120px_150px_80px_90px] gap-2 px-4 py-2 items-center text-xs cursor-pointer border-b border-border hover:bg-muted/50 rounded-none select-none transition-colors",
+                          "grid grid-cols-[1fr_120px_150px_80px_90px] gap-2 px-4 py-2 items-center text-xs cursor-pointer border-b border-border hover:bg-muted/50 rounded-md select-none transition-colors",
                           isSelected && "bg-accent-brand/10",
                           dragState.target?.path === file.path &&
                             "bg-accent-brand/20 border-accent-brand border-dashed",
@@ -1177,7 +1177,7 @@ export function FileManagerGrid({
                               onChange={(e) => setEditingName(e.target.value)}
                               onKeyDown={handleEditKeyDown}
                               onBlur={handleEditConfirm}
-                              className="flex-1 min-w-0 max-w-[200px] border border-accent-brand/60 bg-card px-2 py-1 text-xs rounded-none outline-none focus:ring-1 focus:ring-accent-brand/50 pointer-events-auto"
+                              className="flex-1 min-w-0 max-w-[200px] border border-accent-brand/60 bg-card px-2 py-1 text-xs rounded-md outline-none focus:ring-1 focus:ring-accent-brand/50 pointer-events-auto"
                               onClick={(e) => e.stopPropagation()}
                               onMouseDown={(e) => e.stopPropagation()}
                             />
@@ -1271,7 +1271,7 @@ export function FileManagerGrid({
               zIndex: 999999,
             }}
           >
-            <div className="bg-card border border-border rounded-none shadow-md px-3 py-2 flex items-center gap-2">
+            <div className="bg-card border border-border rounded-md shadow-md px-3 py-2 flex items-center gap-2">
               {(() => {
                 const files =
                   dragState.files.length > 0
@@ -1367,7 +1367,7 @@ function CreateIntentGridItem({
 
   return (
     <div
-      className="group flex flex-col items-center p-3 rounded-none border-2 border-dashed border-accent-brand/60 bg-accent-brand/5"
+      className="group flex flex-col items-center p-3 rounded-md border-2 border-dashed border-accent-brand/60 bg-accent-brand/5"
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
@@ -1385,7 +1385,7 @@ function CreateIntentGridItem({
         onChange={(e) => setInputName(e.target.value)}
         onKeyDown={handleKeyDown}
         onBlur={() => commit(inputName.trim())}
-        className="w-full max-w-[120px] border border-accent-brand/60 bg-card px-2 py-1 text-xs text-center rounded-none outline-none focus:ring-1 focus:ring-accent-brand/50"
+        className="w-full max-w-[120px] border border-accent-brand/60 bg-card px-2 py-1 text-xs text-center rounded-md outline-none focus:ring-1 focus:ring-accent-brand/50"
         placeholder={
           intent.type === "directory"
             ? t("fileManager.folderName")
@@ -1447,7 +1447,7 @@ function CreateIntentListItem({
 
   return (
     <div
-      className="grid grid-cols-[1fr_120px_150px_80px_90px] gap-2 px-4 py-2 items-center border-b border-accent-brand/30 bg-accent-brand/5 rounded-none"
+      className="grid grid-cols-[1fr_120px_150px_80px_90px] gap-2 px-4 py-2 items-center border-b border-accent-brand/30 bg-accent-brand/5 rounded-md"
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
@@ -1466,7 +1466,7 @@ function CreateIntentListItem({
           onChange={(e) => setInputName(e.target.value)}
           onKeyDown={handleKeyDown}
           onBlur={() => commit(inputName.trim())}
-          className="flex-1 min-w-0 max-w-[200px] border border-accent-brand/60 bg-card px-2 py-1 text-xs rounded-none outline-none focus:ring-1 focus:ring-accent-brand/50"
+          className="flex-1 min-w-0 max-w-[200px] border border-accent-brand/60 bg-card px-2 py-1 text-xs rounded-md outline-none focus:ring-1 focus:ring-accent-brand/50"
           placeholder={
             intent.type === "directory"
               ? t("fileManager.folderName")

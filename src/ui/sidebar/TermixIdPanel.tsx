@@ -574,7 +574,7 @@ function AddKey({
           onChange={(e) => setPublicKey(e.target.value)}
           placeholder={t("termixId.keyPlaceholder")}
           rows={3}
-          className="rounded-none font-mono text-[11px]"
+          className="rounded-md font-mono text-[11px]"
           spellCheck={false}
         />
         <div className="flex items-center gap-2">

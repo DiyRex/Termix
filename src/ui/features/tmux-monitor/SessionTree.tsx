@@ -224,7 +224,7 @@ export function SessionTree({
                       side="right"
                       align="start"
                       sideOffset={8}
-                      className="w-56 rounded-none border border-border p-0 shadow-md"
+                      className="w-56 rounded-md border border-border p-0 shadow-md"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="w-full px-3 py-2">

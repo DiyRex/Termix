@@ -111,14 +111,14 @@ export function TmuxSessionPicker({
           <Button
             onClick={onCancel}
             variant="ghost"
-            className="rounded-none text-[10px] font-bold uppercase tracking-widest"
+            className="rounded-md text-[10px] font-bold uppercase tracking-widest"
           >
             {t("common.cancel")}
           </Button>
           <Button
             onClick={onCreateNew}
             variant="outline"
-            className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-none text-[10px] font-bold uppercase tracking-widest"
+            className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-md text-[10px] font-bold uppercase tracking-widest"
           >
             {t("terminal.tmuxCreateNew")}
           </Button>

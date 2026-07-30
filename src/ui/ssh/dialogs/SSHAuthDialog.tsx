@@ -168,16 +168,16 @@ export function SSHAuthDialog({
               value={authTab}
               onValueChange={(v) => setAuthTab(v as "password" | "key")}
             >
-              <TabsList className="w-full rounded-none">
+              <TabsList className="w-full rounded-md">
                 <TabsTrigger
                   value="password"
-                  className="flex-1 rounded-none text-[10px] font-bold uppercase tracking-widest"
+                  className="flex-1 rounded-md text-[10px] font-bold uppercase tracking-widest"
                 >
                   {t("credentials.password")}
                 </TabsTrigger>
                 <TabsTrigger
                   value="key"
-                  className="flex-1 rounded-none text-[10px] font-bold uppercase tracking-widest"
+                  className="flex-1 rounded-md text-[10px] font-bold uppercase tracking-widest"
                 >
                   {t("credentials.sshKey")}
                 </TabsTrigger>
@@ -195,7 +195,7 @@ export function SSHAuthDialog({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoFocus
-                  className="rounded-none bg-muted/50 border-border text-xs"
+                  className="rounded-md bg-muted/50 border-border text-xs"
                 />
                 <p className="text-[10px] text-muted-foreground">
                   {t("auth.sshPasswordDescription")}
@@ -218,7 +218,7 @@ export function SSHAuthDialog({
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full justify-start rounded-none text-[10px] font-bold uppercase tracking-widest border-border"
+                      className="w-full justify-start rounded-md text-[10px] font-bold uppercase tracking-widest border-border"
                     >
                       <Upload className="size-3.5 mr-2" />
                       <span className="truncate">
@@ -264,7 +264,7 @@ export function SSHAuthDialog({
                     placeholder={t("placeholders.keyPassword")}
                     value={keyPassword}
                     onChange={(e) => setKeyPassword(e.target.value)}
-                    className="rounded-none bg-muted/50 border-border text-xs"
+                    className="rounded-md bg-muted/50 border-border text-xs"
                   />
                   <p className="text-[10px] text-muted-foreground">
                     {t("auth.sshKeyPasswordDescription")}
@@ -278,7 +278,7 @@ export function SSHAuthDialog({
                     placeholder={t("placeholders.enterPassword")}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="rounded-none bg-muted/50 border-border text-xs"
+                    className="rounded-md bg-muted/50 border-border text-xs"
                   />
                 </div>
               </TabsContent>
@@ -291,7 +291,7 @@ export function SSHAuthDialog({
               variant="ghost"
               onClick={onCancel}
               disabled={loading}
-              className="rounded-none text-[10px] font-bold uppercase tracking-widest"
+              className="rounded-md text-[10px] font-bold uppercase tracking-widest"
             >
               {t("common.cancel")}
             </Button>
@@ -299,7 +299,7 @@ export function SSHAuthDialog({
               type="submit"
               variant="outline"
               disabled={!canSubmit() || loading}
-              className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-none text-[10px] font-bold uppercase tracking-widest"
+              className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-md text-[10px] font-bold uppercase tracking-widest"
             >
               {loading ? t("common.connecting") : t("common.connect")}
             </Button>

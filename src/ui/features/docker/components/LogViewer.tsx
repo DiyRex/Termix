@@ -170,7 +170,7 @@ export function LogViewer({
               placeholder={t("docker.filterLogs")}
               value={logSearch}
               onChange={(e) => setLogSearch(e.target.value)}
-              className="pl-7 h-7 text-xs bg-background border-border rounded-none"
+              className="pl-7 h-7 text-xs bg-background border-border rounded-md"
             />
           </div>
           <Button

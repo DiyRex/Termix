@@ -62,7 +62,7 @@ export function OPKSSHDialog({
                       type="button"
                       variant="outline"
                       onClick={() => onSelectProvider(provider.alias)}
-                      className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-none text-[10px] font-bold uppercase tracking-widest w-full flex items-center gap-2"
+                      className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-md text-[10px] font-bold uppercase tracking-widest w-full flex items-center gap-2"
                     >
                       <ExternalLink className="size-3.5" />
                       {t("terminal.opksshSignInWith", {
@@ -78,7 +78,7 @@ export function OPKSSHDialog({
                   type="button"
                   variant="outline"
                   onClick={onOpenUrl}
-                  className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-none text-[10px] font-bold uppercase tracking-widest w-full flex items-center gap-2"
+                  className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-md text-[10px] font-bold uppercase tracking-widest w-full flex items-center gap-2"
                 >
                   <ExternalLink className="size-3.5" />
                   {t("terminal.opksshOpenBrowser")}
@@ -89,7 +89,7 @@ export function OPKSSHDialog({
                   type="button"
                   variant="ghost"
                   onClick={onCancel}
-                  className="rounded-none text-[10px] font-bold uppercase tracking-widest"
+                  className="rounded-md text-[10px] font-bold uppercase tracking-widest"
                 >
                   {t("common.cancel")}
                 </Button>
@@ -112,7 +112,7 @@ export function OPKSSHDialog({
                   type="button"
                   variant="ghost"
                   onClick={onCancel}
-                  className="rounded-none text-[10px] font-bold uppercase tracking-widest"
+                  className="rounded-md text-[10px] font-bold uppercase tracking-widest"
                 >
                   {t("common.cancel")}
                 </Button>
@@ -138,7 +138,7 @@ export function OPKSSHDialog({
                   type="button"
                   variant="ghost"
                   onClick={onCancel}
-                  className="rounded-none text-[10px] font-bold uppercase tracking-widest"
+                  className="rounded-md text-[10px] font-bold uppercase tracking-widest"
                 >
                   {t("common.close")}
                 </Button>

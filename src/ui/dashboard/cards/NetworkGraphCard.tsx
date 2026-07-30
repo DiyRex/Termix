@@ -784,7 +784,7 @@ export function NetworkGraphCard({
   const contextMenuEl = contextMenu.visible ? (
     <div
       ref={contextMenuRef}
-      className="fixed z-[300] min-w-[170px] shadow-2xl rounded-none bg-card border border-border"
+      className="fixed z-[300] min-w-[170px] shadow-2xl rounded-md bg-card border border-border"
       style={{ top: contextMenu.y, left: contextMenu.x }}
     >
       {contextMenu.type === "node" && (

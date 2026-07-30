@@ -62,7 +62,7 @@ export function PassphraseDialog({
               name="passphrase"
               autoFocus
               placeholder={t("placeholders.keyPassword")}
-              className="rounded-none bg-muted/50 border-border text-xs"
+              className="rounded-md bg-muted/50 border-border text-xs"
             />
             <p className="text-[10px] text-muted-foreground">
               {t("auth.passphraseRequiredDescription")}
@@ -73,14 +73,14 @@ export function PassphraseDialog({
               type="button"
               variant="ghost"
               onClick={onCancel}
-              className="rounded-none text-[10px] font-bold uppercase tracking-widest"
+              className="rounded-md text-[10px] font-bold uppercase tracking-widest"
             >
               {t("common.cancel")}
             </Button>
             <Button
               type="submit"
               variant="outline"
-              className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-none text-[10px] font-bold uppercase tracking-widest"
+              className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-md text-[10px] font-bold uppercase tracking-widest"
             >
               {t("common.connect")}
             </Button>

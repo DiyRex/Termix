@@ -138,7 +138,7 @@ export function FileManagerToolbar({
             variant="ghost"
             size="icon"
             onClick={() => setMobileSidebarOpen((open) => !open)}
-            className="md:hidden size-8 rounded-none"
+            className="md:hidden size-8 rounded-md"
             title={t("fileManager.toggleSidebar")}
           >
             <Layout className="size-4" />
@@ -148,7 +148,7 @@ export function FileManagerToolbar({
             size="icon"
             onClick={goBack}
             disabled={navIndex <= 0}
-            className="size-8 rounded-none"
+            className="size-8 rounded-md"
           >
             <ChevronLeft className="size-4" />
           </Button>
@@ -157,7 +157,7 @@ export function FileManagerToolbar({
             size="icon"
             onClick={goForward}
             disabled={navIndex >= navHistoryLength - 1}
-            className="size-8 rounded-none"
+            className="size-8 rounded-md"
           >
             <ChevronRight className="size-4" />
           </Button>
@@ -166,7 +166,7 @@ export function FileManagerToolbar({
             size="icon"
             onClick={goUp}
             disabled={currentPath === "/"}
-            className="size-8 rounded-none"
+            className="size-8 rounded-md"
           >
             <ArrowUp className="size-4" />
           </Button>
@@ -174,7 +174,7 @@ export function FileManagerToolbar({
             variant="ghost"
             size="icon"
             onClick={handleRefreshDirectory}
-            className="size-8 rounded-none"
+            className="size-8 rounded-md"
           >
             <RefreshCw
               className={`size-4 ${isLoading && !!sshSessionId ? "animate-spin [animation-duration:0.5s]" : ""}`}
@@ -182,7 +182,7 @@ export function FileManagerToolbar({
           </Button>
         </div>
 
-        <div className="hidden md:flex flex-1 items-center px-3 h-8 bg-muted/50 border border-border rounded-none gap-2 overflow-hidden">
+        <div className="hidden md:flex flex-1 items-center px-3 h-8 bg-muted/50 border border-border rounded-md gap-2 overflow-hidden">
           <Breadcrumb currentPath={currentPath} navigateTo={navigateTo} t={t} />
         </div>
 
@@ -192,7 +192,7 @@ export function FileManagerToolbar({
               <Button
                 variant="ghost"
                 size="icon"
-                className="size-6 text-accent-brand hover:bg-accent-brand/20 rounded-none"
+                className="size-6 text-accent-brand hover:bg-accent-brand/20 rounded-md"
                 onClick={() => handleDeleteFiles(selectedFiles)}
               >
                 <Trash2 className="size-3.5" />
@@ -200,7 +200,7 @@ export function FileManagerToolbar({
               <Button
                 variant="ghost"
                 size="icon"
-                className="size-6 text-accent-brand hover:bg-accent-brand/20 rounded-none"
+                className="size-6 text-accent-brand hover:bg-accent-brand/20 rounded-md"
                 onClick={() => handleCopyFiles(selectedFiles)}
               >
                 <Copy className="size-3.5" />
@@ -214,16 +214,16 @@ export function FileManagerToolbar({
               placeholder={t("fileManager.searchFiles")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 pl-8 text-xs bg-muted/50 border-border rounded-none focus:ring-1 focus:ring-accent-brand/50"
+              className="h-8 pl-8 text-xs bg-muted/50 border-border rounded-md focus:ring-1 focus:ring-accent-brand/50"
             />
           </div>
 
-          <div className="flex items-center border border-border rounded-none overflow-hidden">
+          <div className="flex items-center border border-border rounded-md overflow-hidden">
             <Button
               variant={viewMode === "grid" ? "secondary" : "ghost"}
               size="icon"
               onClick={() => setViewMode("grid")}
-              className={`size-8 rounded-none border-y-0 border-l-0 border-r border-border ${viewMode === "grid" ? "bg-accent-brand/10 text-accent-brand" : ""}`}
+              className={`size-8 rounded-md border-y-0 border-l-0 border-r border-border ${viewMode === "grid" ? "bg-accent-brand/10 text-accent-brand" : ""}`}
             >
               <Grid3X3 className="size-4" />
             </Button>
@@ -231,7 +231,7 @@ export function FileManagerToolbar({
               variant={viewMode === "list" ? "secondary" : "ghost"}
               size="icon"
               onClick={() => setViewMode("list")}
-              className={`size-8 rounded-none border-y-0 border-r-0 border-border ${viewMode === "list" ? "bg-accent-brand/10 text-accent-brand" : ""}`}
+              className={`size-8 rounded-md border-y-0 border-r-0 border-border ${viewMode === "list" ? "bg-accent-brand/10 text-accent-brand" : ""}`}
             >
               <List className="size-4" />
             </Button>
@@ -260,7 +260,7 @@ export function FileManagerToolbar({
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 gap-1.5 border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-none font-bold uppercase tracking-widest text-[10px]"
+                className="h-8 gap-1.5 border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-md font-bold uppercase tracking-widest text-[10px]"
               >
                 <Plus className="size-3.5" />
                 {t("fileManager.new")}
@@ -268,14 +268,14 @@ export function FileManagerToolbar({
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="w-44 rounded-none border-border bg-card"
+              className="w-44 rounded-md border-border bg-card"
               onCloseAutoFocus={(e) => e.preventDefault()}
             >
               <DropdownMenuItem
                 onSelect={() => {
                   setTimeout(() => handleCreateNewFolder(), 0);
                 }}
-                className="rounded-none text-xs font-semibold gap-2 focus:bg-accent-brand/10 focus:text-accent-brand"
+                className="rounded-md text-xs font-semibold gap-2 focus:bg-accent-brand/10 focus:text-accent-brand"
               >
                 <FolderPlus className="size-4 text-accent-brand" />
                 {t("fileManager.newFolder")}
@@ -284,7 +284,7 @@ export function FileManagerToolbar({
                 onSelect={() => {
                   setTimeout(() => handleCreateNewFile(), 0);
                 }}
-                className="rounded-none text-xs font-semibold gap-2 focus:bg-accent-brand/10 focus:text-accent-brand"
+                className="rounded-md text-xs font-semibold gap-2 focus:bg-accent-brand/10 focus:text-accent-brand"
               >
                 <FilePlus className="size-4 text-muted-foreground" />
                 {t("fileManager.newFile")}
@@ -299,19 +299,19 @@ export function FileManagerToolbar({
               >
                 <DropdownMenuRadioItem
                   value="name"
-                  className="rounded-none text-xs"
+                  className="rounded-md text-xs"
                 >
                   {t("fileManager.sortByName")}
                 </DropdownMenuRadioItem>
                 <DropdownMenuRadioItem
                   value="modified"
-                  className="rounded-none text-xs"
+                  className="rounded-md text-xs"
                 >
                   {t("fileManager.sortByDate")}
                 </DropdownMenuRadioItem>
                 <DropdownMenuRadioItem
                   value="size"
-                  className="rounded-none text-xs"
+                  className="rounded-md text-xs"
                 >
                   {t("fileManager.sortBySize")}
                 </DropdownMenuRadioItem>
@@ -323,13 +323,13 @@ export function FileManagerToolbar({
               >
                 <DropdownMenuRadioItem
                   value="asc"
-                  className="rounded-none text-xs"
+                  className="rounded-md text-xs"
                 >
                   {t("fileManager.ascending")}
                 </DropdownMenuRadioItem>
                 <DropdownMenuRadioItem
                   value="desc"
-                  className="rounded-none text-xs"
+                  className="rounded-md text-xs"
                 >
                   {t("fileManager.descending")}
                 </DropdownMenuRadioItem>

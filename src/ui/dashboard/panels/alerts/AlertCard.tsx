@@ -90,7 +90,7 @@ export function AlertCard({
 
   return (
     <div
-      className={`w-full border border-foreground/10 rounded-none bg-card overflow-hidden ${getAccentBorderClass(alert.priority, alert.type)}`}
+      className={`w-full border border-foreground/10 rounded-md bg-card overflow-hidden ${getAccentBorderClass(alert.priority, alert.type)}`}
     >
       <div className="flex items-start justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-3">

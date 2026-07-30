@@ -823,7 +823,7 @@ export function TmuxMonitor({
                 </button>
               </PopoverTrigger>
               <PopoverContent
-                className="w-64 rounded-none border-0 p-2 ring-1 ring-border"
+                className="w-64 rounded-md border-0 p-2 ring-1 ring-border"
                 align="start"
               >
                 <p className="mb-1 text-xs text-muted-foreground">

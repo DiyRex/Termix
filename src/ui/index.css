@@ -55,7 +55,13 @@
 @custom-variant termius (&:is(.termius *));
 
 @theme inline {
-  --font-heading: var(--font-mono);
+  /* UI chrome is sans; monospace is reserved for the terminal, code and other
+     places where character alignment actually matters. The terminal sets its
+     own fontFamily from TERMINAL_FONTS, so it is unaffected by this. */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-heading: var(--font-sans);
   --font-mono: "JetBrains Mono Variable", monospace;
   --color-accent-brand: var(--accent-brand);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -519,10 +525,10 @@
     @apply overflow-hidden;
   }
   body {
-    @apply bg-background text-foreground font-mono;
+    @apply bg-background text-foreground font-sans antialiased;
   }
   html {
-    @apply font-mono;
+    @apply font-sans;
   }
 }
 
