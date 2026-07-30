@@ -17,7 +17,7 @@ export function NotesEditForm({
           value={config.content}
           onChange={(e) => onChange({ ...config, content: e.target.value })}
           placeholder="Write your notes here..."
-          className="text-sm min-h-[120px] resize-none rounded-none"
+          className="text-sm min-h-[120px] resize-none rounded-md"
         />
       </div>
     </div>

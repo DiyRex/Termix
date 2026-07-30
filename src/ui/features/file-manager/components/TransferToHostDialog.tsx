@@ -671,7 +671,7 @@ export function TransferToHostDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-lg rounded-none border-border bg-card">
+      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-lg rounded-md border-border bg-card">
         <DialogHeader>
           <DialogTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
             <ArrowRightLeft className="size-4 text-accent-brand" />
@@ -914,7 +914,7 @@ export function TransferToHostDialog({
                   onKeyDown={handleDestPathKeyDown}
                   placeholder="/home/user"
                   disabled={!selectedHost}
-                  className="rounded-none bg-muted/50 border-border font-mono text-xs"
+                  className="rounded-md bg-muted/50 border-border font-mono text-xs"
                 />
                 {isArchiveTransfer && (
                   <p className="text-[10px] text-muted-foreground">
@@ -1051,7 +1051,7 @@ export function TransferToHostDialog({
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="rounded-none text-[10px] font-bold uppercase tracking-widest"
+            className="rounded-md text-[10px] font-bold uppercase tracking-widest"
           >
             {t("transfer.cancel")}
           </Button>
@@ -1064,7 +1064,7 @@ export function TransferToHostDialog({
               !isHostReady ||
               availableHosts.length === 0
             }
-            className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-none text-[10px] font-bold uppercase tracking-widest"
+            className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-md text-[10px] font-bold uppercase tracking-widest"
           >
             <ArrowRightLeft className="size-3.5 mr-1" />
             {move ? t("transfer.confirmMove") : t("transfer.confirmCopy")}

@@ -77,14 +77,14 @@ export function WarpgateDialog({
                 type="text"
                 value={url}
                 readOnly
-                className="rounded-none bg-muted/50 border-border text-xs font-mono flex-1"
+                className="rounded-md bg-muted/50 border-border text-xs font-mono flex-1"
               />
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
                 onClick={handleCopyUrl}
-                className="rounded-none border-border shrink-0"
+                className="rounded-md border-border shrink-0"
                 title={t("common.copy")}
               >
                 {copied ? (
@@ -101,7 +101,7 @@ export function WarpgateDialog({
               type="button"
               variant="ghost"
               onClick={onCancel}
-              className="rounded-none text-[10px] font-bold uppercase tracking-widest sm:mr-auto"
+              className="rounded-md text-[10px] font-bold uppercase tracking-widest sm:mr-auto"
             >
               {t("common.cancel")}
             </Button>
@@ -109,7 +109,7 @@ export function WarpgateDialog({
               type="button"
               variant="outline"
               onClick={onContinue}
-              className="rounded-none text-[10px] font-bold uppercase tracking-widest"
+              className="rounded-md text-[10px] font-bold uppercase tracking-widest"
             >
               {t("terminal.warpgateContinue")}
             </Button>
@@ -117,7 +117,7 @@ export function WarpgateDialog({
               type="button"
               variant="outline"
               onClick={onOpenUrl}
-              className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-none text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5"
+              className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-md text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5"
             >
               <ExternalLink className="size-3.5" />
               {t("terminal.warpgateOpenBrowser")}

@@ -97,7 +97,7 @@ export function TOTPDialog({
                 type="button"
                 variant="ghost"
                 onClick={onCancel}
-                className="rounded-none text-[10px] font-bold uppercase tracking-widest"
+                className="rounded-md text-[10px] font-bold uppercase tracking-widest"
               >
                 {t("common.cancel")}
               </Button>
@@ -112,7 +112,7 @@ export function TOTPDialog({
                 type="text"
                 autoFocus
                 placeholder={t("terminal.mfaMenuPlaceholder")}
-                className="rounded-none bg-muted/50 border-border text-center text-sm tracking-widest"
+                className="rounded-md bg-muted/50 border-border text-center text-sm tracking-widest"
               />
             ) : (
               <Input
@@ -124,7 +124,7 @@ export function TOTPDialog({
                 pattern="[0-9]*"
                 inputMode="numeric"
                 placeholder="000000"
-                className="rounded-none bg-muted/50 border-border text-center text-sm tracking-widest"
+                className="rounded-md bg-muted/50 border-border text-center text-sm tracking-widest"
               />
             )}
             <div className="flex justify-end gap-2">
@@ -132,14 +132,14 @@ export function TOTPDialog({
                 type="button"
                 variant="ghost"
                 onClick={onCancel}
-                className="rounded-none text-[10px] font-bold uppercase tracking-widest"
+                className="rounded-md text-[10px] font-bold uppercase tracking-widest"
               >
                 {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
                 variant="outline"
-                className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-none text-[10px] font-bold uppercase tracking-widest"
+                className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-md text-[10px] font-bold uppercase tracking-widest"
               >
                 {isPush
                   ? t("terminal.mfaSendRequest")

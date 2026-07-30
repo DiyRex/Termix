@@ -1859,7 +1859,7 @@ export function AppShell({
           <Button
             variant="ghost"
             size="icon"
-            className="h-full w-12.5 border-y-0 border-border rounded-none text-muted-foreground hover:text-foreground"
+            className="h-full w-12.5 border-y-0 border-border rounded-md text-muted-foreground hover:text-foreground"
             title="Reset width"
             onClick={() => setSidebarWidth(291)}
           >
@@ -1871,7 +1871,7 @@ export function AppShell({
       <Button
         variant="ghost"
         size="icon"
-        className="h-full w-12.5 rounded-none text-muted-foreground hover:text-foreground"
+        className="h-full w-12.5 rounded-md text-muted-foreground hover:text-foreground"
         onClick={() => setSidebarOpen(false)}
       >
         <ChevronLeft className="size-4" />

@@ -658,7 +658,7 @@ export function FileManagerSidebar({
                   selectedId={selectedTreeId}
                   expandedIds={ancestorIds}
                   onSelect={(id) => handleDirectorySelect(id)}
-                  className="bg-transparent border-0 rounded-none shadow-none"
+                  className="bg-transparent border-0 rounded-md shadow-none"
                 >
                   {directoryTree.map((item) => renderFolderTreeItem(item))}
                 </FolderTree.Root>
@@ -682,7 +682,7 @@ export function FileManagerSidebar({
                     {storageUsedPct}% {t("fileManager.used")}
                   </span>
                 </div>
-                <div className="h-1.5 bg-muted rounded-none overflow-hidden border border-border">
+                <div className="h-1.5 bg-muted rounded-md overflow-hidden border border-border">
                   <div
                     className="h-full bg-accent-brand"
                     style={{ width: `${storageUsedPct}%` }}
@@ -706,7 +706,7 @@ export function FileManagerSidebar({
                 {storageUsedPct}% {t("fileManager.used")}
               </span>
             </div>
-            <div className="h-1.5 bg-muted rounded-none overflow-hidden border border-border">
+            <div className="h-1.5 bg-muted rounded-md overflow-hidden border border-border">
               <div
                 className="h-full bg-accent-brand"
                 style={{ width: `${storageUsedPct}%` }}
@@ -727,7 +727,7 @@ export function FileManagerSidebar({
 
           <div
             data-sidebar-context-menu
-            className="fixed bg-card border border-border rounded-none shadow-xl min-w-[180px] z-50 overflow-hidden"
+            className="fixed bg-card border border-border rounded-md shadow-xl min-w-[180px] z-50 overflow-hidden"
             style={{ left: contextMenu.x, top: contextMenu.y }}
           >
             {contextMenu.item.type === "recent" && (

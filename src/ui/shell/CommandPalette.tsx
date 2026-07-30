@@ -185,11 +185,11 @@ export function CommandPalette({
     >
       <div
         className={cn(
-          "w-full max-w-2xl mx-4 overflow-hidden rounded-none border border-border bg-card shadow-2xl animate-in zoom-in-95 duration-200",
+          "w-full max-w-2xl mx-4 overflow-hidden rounded-md border border-border bg-card shadow-2xl animate-in zoom-in-95 duration-200",
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <Command className="rounded-none">
+        <Command className="rounded-md">
           <div className="flex items-center border-b border-border px-4 py-1">
             <Search className="size-4 text-muted-foreground mr-3" />
             <input
@@ -200,7 +200,7 @@ export function CommandPalette({
               className="flex-1 h-12 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
             <div className="flex items-center gap-1.5 ml-2">
-              <Kbd className="bg-muted/50 border-none h-6 px-2 text-[11px] rounded-none">
+              <Kbd className="bg-muted/50 border-none h-6 px-2 text-[11px] rounded-md">
                 ESC
               </Kbd>
             </div>
@@ -221,9 +221,9 @@ export function CommandPalette({
                     ),
                   )
                 }
-                className="group flex items-center gap-3 px-3 py-2.5 rounded-none hover:bg-accent-brand/10 cursor-pointer"
+                className="group flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-accent-brand/10 cursor-pointer"
               >
-                <div className="size-8 rounded-none bg-muted flex items-center justify-center group-hover:bg-accent-brand/20 transition-colors">
+                <div className="size-8 rounded-md bg-muted flex items-center justify-center group-hover:bg-accent-brand/20 transition-colors">
                   <Plus className="size-4 text-accent-brand" />
                 </div>
                 <div className="flex flex-col flex-1">
@@ -238,9 +238,9 @@ export function CommandPalette({
 
               <CommandItem
                 onSelect={() => handleAction(() => onOpenTab("admin-settings"))}
-                className="group flex items-center gap-3 px-3 py-2.5 rounded-none hover:bg-accent-brand/10 cursor-pointer"
+                className="group flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-accent-brand/10 cursor-pointer"
               >
-                <div className="size-8 rounded-none bg-muted flex items-center justify-center group-hover:bg-accent-brand/20 transition-colors">
+                <div className="size-8 rounded-md bg-muted flex items-center justify-center group-hover:bg-accent-brand/20 transition-colors">
                   <Settings className="size-4 text-accent-brand" />
                 </div>
                 <div className="flex flex-col flex-1">
@@ -255,9 +255,9 @@ export function CommandPalette({
 
               <CommandItem
                 onSelect={() => handleAction(() => onOpenTab("user-profile"))}
-                className="group flex items-center gap-3 px-3 py-2.5 rounded-none hover:bg-accent-brand/10 cursor-pointer"
+                className="group flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-accent-brand/10 cursor-pointer"
               >
-                <div className="size-8 rounded-none bg-muted flex items-center justify-center group-hover:bg-accent-brand/20 transition-colors">
+                <div className="size-8 rounded-md bg-muted flex items-center justify-center group-hover:bg-accent-brand/20 transition-colors">
                   <User className="size-4 text-accent-brand" />
                 </div>
                 <div className="flex flex-col flex-1">
@@ -273,9 +273,9 @@ export function CommandPalette({
               {/* --- tmux-monitor --- */}
               <CommandItem
                 onSelect={() => handleAction(() => onOpenTab("tmux_monitor"))}
-                className="group flex items-center gap-3 px-3 py-2.5 rounded-none hover:bg-accent-brand/10 cursor-pointer"
+                className="group flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-accent-brand/10 cursor-pointer"
               >
-                <div className="size-8 rounded-none bg-muted flex items-center justify-center group-hover:bg-accent-brand/20 transition-colors">
+                <div className="size-8 rounded-md bg-muted flex items-center justify-center group-hover:bg-accent-brand/20 transition-colors">
                   <Layers className="size-4 text-accent-brand" />
                 </div>
                 <div className="flex flex-col flex-1">
@@ -298,9 +298,9 @@ export function CommandPalette({
                     ),
                   )
                 }
-                className="group flex items-center gap-3 px-3 py-2.5 rounded-none hover:bg-accent-brand/10 cursor-pointer"
+                className="group flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-accent-brand/10 cursor-pointer"
               >
-                <div className="size-8 rounded-none bg-muted flex items-center justify-center group-hover:bg-accent-brand/20 transition-colors">
+                <div className="size-8 rounded-md bg-muted flex items-center justify-center group-hover:bg-accent-brand/20 transition-colors">
                   <KeyRound className="size-4 text-accent-brand" />
                 </div>
                 <div className="flex flex-col flex-1">
@@ -332,9 +332,9 @@ export function CommandPalette({
                           ),
                         )
                       }
-                      className="group flex items-center gap-3 px-3 py-2 rounded-none hover:bg-accent-brand/10 cursor-pointer"
+                      className="group flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent-brand/10 cursor-pointer"
                     >
-                      <div className="size-7 rounded-none bg-muted flex items-center justify-center group-hover:bg-accent-brand/20 transition-colors text-muted-foreground group-hover:text-accent-brand">
+                      <div className="size-7 rounded-md bg-muted flex items-center justify-center group-hover:bg-accent-brand/20 transition-colors text-muted-foreground group-hover:text-accent-brand">
                         {ACTIVITY_ICONS[item.type]}
                       </div>
                       <div className="flex flex-col flex-1 min-w-0">
@@ -390,9 +390,9 @@ export function CommandPalette({
                               onOpenTab(type, host.name);
                             })
                           }
-                          className="group flex items-center gap-3 px-3 py-2.5 rounded-none hover:bg-accent-brand/10 cursor-pointer"
+                          className="group flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-accent-brand/10 cursor-pointer"
                         >
-                          <div className="size-8 rounded-none bg-muted flex items-center justify-center group-hover:bg-accent-brand/20 transition-colors shrink-0">
+                          <div className="size-8 rounded-md bg-muted flex items-center justify-center group-hover:bg-accent-brand/20 transition-colors shrink-0">
                             <Server
                               className={cn(
                                 "size-4",
@@ -540,7 +540,7 @@ export function CommandPalette({
                       "_blank",
                     )
                   }
-                  className="flex items-center gap-3 px-3 py-2 rounded-none hover:bg-accent-brand/10 cursor-pointer"
+                  className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent-brand/10 cursor-pointer"
                 >
                   <Globe className="size-4 text-muted-foreground" />
                   <span className="text-sm font-medium">GitHub</span>
@@ -552,7 +552,7 @@ export function CommandPalette({
                       "_blank",
                     )
                   }
-                  className="flex items-center gap-3 px-3 py-2 rounded-none hover:bg-accent-brand/10 cursor-pointer"
+                  className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent-brand/10 cursor-pointer"
                 >
                   <MessagesSquare className="size-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Discord</span>
@@ -564,7 +564,7 @@ export function CommandPalette({
                       "_blank",
                     )
                   }
-                  className="flex items-center gap-3 px-3 py-2 rounded-none hover:bg-accent-brand/10 cursor-pointer"
+                  className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent-brand/10 cursor-pointer"
                 >
                   <LifeBuoy className="size-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Support</span>
@@ -576,19 +576,19 @@ export function CommandPalette({
           <div className="border-t border-border px-4 py-3 bg-muted/30 flex items-center justify-between text-[11px] text-muted-foreground">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
-                <Kbd className="h-5 px-1 bg-background rounded-none">↑↓</Kbd>
+                <Kbd className="h-5 px-1 bg-background rounded-md">↑↓</Kbd>
                 <span>{t("commandPalette.navigate")}</span>
               </div>
               <div className="flex items-center gap-1">
-                <Kbd className="h-5 px-1 bg-background rounded-none">ENTER</Kbd>
+                <Kbd className="h-5 px-1 bg-background rounded-md">ENTER</Kbd>
                 <span>{t("commandPalette.select")}</span>
               </div>
             </div>
             <div className="flex items-center gap-1">
               <span>{t("commandPalette.toggleWith")}</span>
-              <Kbd className="h-5 px-1.5 bg-background rounded-none">Shift</Kbd>
+              <Kbd className="h-5 px-1.5 bg-background rounded-md">Shift</Kbd>
               <span>+</span>
-              <Kbd className="h-5 px-1.5 bg-background rounded-none">Shift</Kbd>
+              <Kbd className="h-5 px-1.5 bg-background rounded-md">Shift</Kbd>
             </div>
           </div>
         </Command>

@@ -67,7 +67,7 @@ export function TextBannerEditForm({
           value={config.text}
           onChange={(e) => onChange({ ...config, text: e.target.value })}
           rows={2}
-          className="text-sm min-h-[60px] resize-none rounded-none"
+          className="text-sm min-h-[60px] resize-none rounded-md"
         />
       </div>
       <div className="flex flex-col gap-1">

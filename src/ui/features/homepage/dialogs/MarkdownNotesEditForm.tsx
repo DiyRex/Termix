@@ -20,7 +20,7 @@ export function MarkdownNotesEditForm({
         <Textarea
           value={config.content}
           onChange={(e) => onChange({ ...config, content: e.target.value })}
-          className="text-sm min-h-[120px] resize-none rounded-none font-mono"
+          className="text-sm min-h-[120px] resize-none rounded-md font-mono"
         />
       </div>
       <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">

@@ -114,7 +114,7 @@ export function TerminalWindow({
         titleActions={
           onPromoteToTab ? (
             <button
-              className="size-6 flex items-center justify-center rounded-none hover:bg-accent-brand/10 hover:text-accent-brand text-muted-foreground transition-colors"
+              className="size-6 flex items-center justify-center rounded-md hover:bg-accent-brand/10 hover:text-accent-brand text-muted-foreground transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 handlePromoteToTab();

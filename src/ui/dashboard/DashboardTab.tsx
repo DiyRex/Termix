@@ -1803,7 +1803,7 @@ export function DashboardTab({
           )}
         </div>
         <div className="flex items-center gap-1">
-          <div className="hidden sm:flex items-center gap-2 mr-2 bg-muted/50 px-2.5 py-1 rounded-none border border-border">
+          <div className="hidden sm:flex items-center gap-2 mr-2 bg-muted/50 px-2.5 py-1 rounded-md border border-border">
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
               {t("dashboardTab.commandPalette")}
             </span>

@@ -565,7 +565,7 @@ export function FileManagerContextMenu({
         ref={menuRef}
         data-context-menu
         className={cn(
-          "fixed bg-card border border-border rounded-none shadow-md min-w-[220px] max-w-[300px] z-[99995] overflow-x-hidden overflow-y-auto py-1",
+          "fixed bg-card border border-border rounded-md shadow-md min-w-[220px] max-w-[300px] z-[99995] overflow-x-hidden overflow-y-auto py-1",
         )}
         style={{
           left: menuPosition.x,
@@ -587,7 +587,7 @@ export function FileManagerContextMenu({
             <button
               key={index}
               className={cn(
-                "w-full px-3 min-h-8 py-1.5 text-left text-xs font-semibold flex items-center justify-between gap-3 rounded-none transition-colors cursor-pointer",
+                "w-full px-3 min-h-8 py-1.5 text-left text-xs font-semibold flex items-center justify-between gap-3 rounded-md transition-colors cursor-pointer",
                 "hover:bg-accent-brand/10 hover:text-accent-brand",
                 item.disabled &&
                   "opacity-40 cursor-not-allowed hover:bg-transparent hover:text-current",

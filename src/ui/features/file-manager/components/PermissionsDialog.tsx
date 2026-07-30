@@ -168,7 +168,7 @@ export function PermissionsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-lg rounded-none border-border bg-card">
+      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-lg rounded-md border-border bg-card">
         <DialogHeader>
           <DialogTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
             <Lock className="size-4 text-accent-brand" />
@@ -232,7 +232,7 @@ export function PermissionsDialog({
             <Input
               value={octal}
               readOnly
-              className="w-20 rounded-none bg-muted/50 border-border text-xs font-mono text-center h-8"
+              className="w-20 rounded-md bg-muted/50 border-border text-xs font-mono text-center h-8"
             />
             <span className="text-[10px] text-muted-foreground font-mono">
               {t("fileManager.currentPermissions")}: {file.permissions || "—"}
@@ -245,7 +245,7 @@ export function PermissionsDialog({
             variant="ghost"
             onClick={() => onOpenChange(false)}
             disabled={loading}
-            className="rounded-none text-[10px] font-bold uppercase tracking-widest"
+            className="rounded-md text-[10px] font-bold uppercase tracking-widest"
           >
             {t("common.cancel")}
           </Button>
@@ -253,7 +253,7 @@ export function PermissionsDialog({
             variant="outline"
             onClick={handleSave}
             disabled={loading}
-            className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-none text-[10px] font-bold uppercase tracking-widest"
+            className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-md text-[10px] font-bold uppercase tracking-widest"
           >
             {loading ? t("common.saving") : t("common.save")}
           </Button>

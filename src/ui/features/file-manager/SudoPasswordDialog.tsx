@@ -49,7 +49,7 @@ export function SudoPasswordDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-md rounded-none border-border bg-card">
+      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-md rounded-md border-border bg-card">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
@@ -66,7 +66,7 @@ export function SudoPasswordDialog({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t("fileManager.sudoPassword")}
-              className="rounded-none bg-muted/50 border-border text-xs focus:ring-1 focus:ring-accent-brand/50"
+              className="rounded-md bg-muted/50 border-border text-xs focus:ring-1 focus:ring-accent-brand/50"
               autoFocus
               disabled={loading}
             />
@@ -78,7 +78,7 @@ export function SudoPasswordDialog({
               variant="ghost"
               onClick={() => onOpenChange(false)}
               disabled={loading}
-              className="rounded-none text-[10px] font-bold uppercase tracking-widest"
+              className="rounded-md text-[10px] font-bold uppercase tracking-widest"
             >
               {t("common.cancel")}
             </Button>
@@ -86,7 +86,7 @@ export function SudoPasswordDialog({
               type="submit"
               disabled={!password.trim() || loading}
               variant="outline"
-              className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-none text-[10px] font-bold uppercase tracking-widest"
+              className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-md text-[10px] font-bold uppercase tracking-widest"
             >
               {loading ? t("common.loading") : t("common.confirm")}
             </Button>

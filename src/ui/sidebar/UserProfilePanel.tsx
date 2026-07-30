@@ -244,7 +244,7 @@ function NewApiKeyDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md rounded-none border-border bg-card p-0 gap-0 overflow-hidden">
+      <DialogContent className="sm:max-w-md rounded-md border-border bg-card p-0 gap-0 overflow-hidden">
         <DialogHeader className="px-5 pt-5 pb-4 border-b border-border">
           <div className="flex items-center gap-2.5">
             <div className="size-8 border border-border bg-muted flex items-center justify-center shrink-0">
@@ -272,7 +272,7 @@ function NewApiKeyDialog({
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-              className="rounded-none bg-muted/50 border-border text-sm h-9"
+              className="rounded-md bg-muted/50 border-border text-sm h-9"
             />
           </div>
 
@@ -287,7 +287,7 @@ function NewApiKeyDialog({
               type="date"
               value={expiry}
               onChange={(e) => setExpiry(e.target.value)}
-              className="rounded-none bg-muted/50 border-border text-sm h-9"
+              className="rounded-md bg-muted/50 border-border text-sm h-9"
             />
           </div>
         </div>
@@ -296,13 +296,13 @@ function NewApiKeyDialog({
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="rounded-none text-[10px] font-bold uppercase tracking-widest"
+            className="rounded-md text-[10px] font-bold uppercase tracking-widest"
           >
             {t("newUi.sidebar.userProfile.cancel")}
           </Button>
           <Button
             variant="outline"
-            className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-none text-[10px] font-bold uppercase tracking-widest gap-1.5"
+            className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-md text-[10px] font-bold uppercase tracking-widest gap-1.5"
             onClick={handleCreate}
           >
             <KeyRound className="size-3" />{" "}

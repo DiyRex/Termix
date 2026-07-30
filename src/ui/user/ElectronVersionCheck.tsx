@@ -125,7 +125,7 @@ export function ElectronVersionCheck({ onContinue }: VersionCheckModalProps) {
           )}
           <Button
             onClick={handleContinue}
-            className="w-full bg-accent-brand hover:bg-accent-brand/90 text-background font-bold rounded-none"
+            className="w-full bg-accent-brand hover:bg-accent-brand/90 text-background font-bold rounded-md"
           >
             {t("common.continue")}
           </Button>
@@ -144,7 +144,7 @@ export function ElectronVersionCheck({ onContinue }: VersionCheckModalProps) {
         />
         <Button
           onClick={handleContinue}
-          className="w-full bg-accent-brand hover:bg-accent-brand/90 text-background font-bold rounded-none"
+          className="w-full bg-accent-brand hover:bg-accent-brand/90 text-background font-bold rounded-md"
         >
           {t("common.continue")}
         </Button>

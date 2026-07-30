@@ -105,7 +105,7 @@ export function HostKeyVerificationDialog({
                     variant="ghost"
                     size="icon"
                     onClick={() => copyFingerprint(fingerprint)}
-                    className="rounded-none shrink-0"
+                    className="rounded-md shrink-0"
                   >
                     {copiedFingerprint ? (
                       <Check className="size-4 text-accent-brand" />
@@ -149,7 +149,7 @@ export function HostKeyVerificationDialog({
                       onClick={() =>
                         copyFingerprint(oldFingerprint || "", true)
                       }
-                      className="rounded-none shrink-0"
+                      className="rounded-md shrink-0"
                     >
                       {copiedOldFingerprint ? (
                         <Check className="size-4 text-accent-brand" />
@@ -172,7 +172,7 @@ export function HostKeyVerificationDialog({
                       variant="ghost"
                       size="icon"
                       onClick={() => copyFingerprint(fingerprint)}
-                      className="rounded-none shrink-0"
+                      className="rounded-md shrink-0"
                     >
                       {copiedFingerprint ? (
                         <Check className="size-4 text-accent-brand" />
@@ -192,7 +192,7 @@ export function HostKeyVerificationDialog({
             type="button"
             variant="ghost"
             onClick={onReject}
-            className="rounded-none text-[10px] font-bold uppercase tracking-widest"
+            className="rounded-md text-[10px] font-bold uppercase tracking-widest"
           >
             {t("common.cancel")}
           </Button>
@@ -202,8 +202,8 @@ export function HostKeyVerificationDialog({
             variant="outline"
             className={
               scenario === "changed"
-                ? "border-destructive/40 text-destructive hover:bg-destructive/10 rounded-none text-[10px] font-bold uppercase tracking-widest"
-                : "border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-none text-[10px] font-bold uppercase tracking-widest"
+                ? "border-destructive/40 text-destructive hover:bg-destructive/10 rounded-md text-[10px] font-bold uppercase tracking-widest"
+                : "border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 rounded-md text-[10px] font-bold uppercase tracking-widest"
             }
           >
             {scenario === "new"

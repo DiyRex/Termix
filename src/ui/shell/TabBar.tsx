@@ -424,7 +424,7 @@ export function TabBar({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-full w-12.5 border-y-0 border-r-0 border-border rounded-none text-muted-foreground hover:text-foreground"
+                className="h-full w-12.5 border-y-0 border-r-0 border-border rounded-md text-muted-foreground hover:text-foreground"
               >
                 <ChevronDown className="size-4" />
               </Button>
@@ -469,7 +469,7 @@ export function TabBar({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-full w-12.5 rounded-none border-y-0 border-border text-muted-foreground hover:text-foreground"
+                className="h-full w-12.5 rounded-md border-y-0 border-border text-muted-foreground hover:text-foreground"
                 title={
                   isAppFullscreen
                     ? "Exit fullscreen (Ctrl+Shift+F)"
@@ -492,7 +492,7 @@ export function TabBar({
           <Button
             variant="ghost"
             size="icon"
-            className="h-full w-12.5 rounded-none border-y-0 border-border text-muted-foreground hover:text-foreground"
+            className="h-full w-12.5 rounded-md border-y-0 border-border text-muted-foreground hover:text-foreground"
             onClick={() => setOpen((o) => !o)}
           >
             <ChevronUp
