@@ -27,6 +27,7 @@ import { isElectron } from "@/lib/electron";
 
 export type RailView =
   | "hosts"
+  | "dashboard"
   | "credentials"
   | "termix-id"
   | "quick-connect"
@@ -54,9 +55,10 @@ type RailItem =
   | { kind: "tab"; tabType: TabType; icon: React.ReactNode; title: string }
   | { kind: "separator" };
 
-const PRIMARY_RAIL_TABS = new Set<string>(["hosts", "dashboard"]);
+const PRIMARY_RAIL_TABS = new Set<string>(["network_graph"]);
 
 const PRIMARY_RAIL_VIEWS = new Set<string>([
+  "dashboard",
   "hosts",
   "credentials",
   "connections",
@@ -71,77 +73,72 @@ function buildRailButtons(
   hidden: Set<string>,
 ): RailItem[] {
   const all: RailItem[] = [
-    // Hosts is a main-area view, not a sidebar panel: a card grid plus the
-    // details inspector needs the window, and that is what keeps a session
-    // from being squeezed into the leftover width.
+    // Every destination here is a full-width main-area tab. Rendering them in a
+    // 291px third column is what left the terminal with the leftover width.
     {
-      kind: "tab",
-      tabType: "hosts" as TabType,
-      icon: <Server size={16} />,
-      title: t("nav.hosts"),
-    },
-    {
-      kind: "tab",
-      tabType: "dashboard" as TabType,
+      view: "dashboard",
       icon: <LayoutDashboard size={16} />,
       title: t("nav.dashboard"),
+    },
+    {
+      view: "hosts",
+      icon: <Server size={16} />,
+      title: t("nav.hosts"),
     },
     {
       view: "credentials",
       icon: <KeyRound size={16} />,
       title: t("nav.credentials"),
     },
-    { kind: "separator" },
-    {
-      view: "termix-id",
-      icon: <Fingerprint size={16} />,
-      title: t("nav.termixId"),
-    },
-    { kind: "separator" },
     {
       view: "connections",
       icon: <Plug size={16} />,
       title: t("nav.connections"),
     },
-    { kind: "separator" },
     {
-      view: "quick-connect",
-      icon: <Zap size={16} />,
-      title: t("nav.quickConnect"),
+      view: "snippets",
+      icon: <Play size={16} />,
+      title: t("nav.snippets"),
     },
-    { kind: "separator" },
     {
-      view: "serial",
-      icon: <Usb size={16} />,
-      title: t("nav.serial"),
+      view: "termix-id",
+      icon: <Fingerprint size={16} />,
+      title: t("nav.termixId"),
     },
-    { kind: "separator" },
-    { view: "ssh-tools", icon: <Hammer size={16} />, title: t("nav.sshTools") },
-    { kind: "separator" },
-    { view: "snippets", icon: <Play size={16} />, title: t("nav.snippets") },
-    { kind: "separator" },
-    { view: "history", icon: <Clock size={16} />, title: t("nav.history") },
-    { kind: "separator" },
     {
       view: "session-logs",
       icon: <ScrollText size={16} />,
       title: t("nav.sessionLogs"),
     },
-    { kind: "separator" },
+    // Secondary: collapsed behind "More".
+    {
+      view: "quick-connect",
+      icon: <Zap size={16} />,
+      title: t("nav.quickConnect"),
+    },
+    { view: "serial", icon: <Usb size={16} />, title: t("nav.serial") },
+    {
+      view: "ssh-tools",
+      icon: <Hammer size={16} />,
+      title: t("nav.sshTools"),
+    },
+    {
+      view: "history",
+      icon: <Clock size={16} />,
+      title: t("nav.history"),
+    },
     {
       view: "split-screen",
       icon: <LayoutPanelLeft size={16} />,
       title: t("nav.splitScreen"),
       dot: splitMode !== "none",
     },
-    { kind: "separator" },
     {
       kind: "tab",
       tabType: "network_graph" as TabType,
       icon: <Network size={16} />,
       title: t("nav.networkGraph"),
     },
-    { kind: "separator" },
   ];
 
   // Filter out hidden items, then collapse consecutive/leading/trailing separators
@@ -369,7 +366,7 @@ export function AppRail({
               onClick={() => onRailClick(item.view)}
               style={btnStyle}
               className={`${btnBase} ${
-                sidebarOpen && railView === item.view
+                railView === item.view
                   ? "text-accent-brand bg-accent-brand/15 ring-1 ring-accent-brand/25"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
               }`}
@@ -456,7 +453,7 @@ export function AppRail({
                     onClick={() => onRailClick(item.view)}
                     style={btnStyle}
                     className={`${btnBase} ${
-                      sidebarOpen && railView === item.view
+                      railView === item.view
                         ? "text-accent-brand bg-accent-brand/15 ring-1 ring-accent-brand/25"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
                     }`}
@@ -513,8 +510,8 @@ export function AppRail({
             onClick={() => onRailClick(item.view)}
             style={btnStyle}
             className={`${btnBase} ${
-              sidebarOpen && railView === item.view
-                ? "text-accent-brand bg-accent-brand/10"
+              railView === item.view
+                ? "text-accent-brand bg-accent-brand/15 ring-1 ring-accent-brand/25"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
             }`}
           >

@@ -33,6 +33,12 @@ const CommandPalette = lazy(() =>
 const HostsPanel = lazy(() =>
   import("@/sidebar/HostsPanel").then((m) => ({ default: m.HostsPanel })),
 );
+const HostsTab = lazy(() =>
+  import("@/features/hosts/HostsTab").then((m) => ({ default: m.HostsTab })),
+);
+const DashboardTab = lazy(() =>
+  import("@/dashboard/DashboardTab").then((m) => ({ default: m.DashboardTab })),
+);
 const QuickConnectPanel = lazy(() =>
   import("@/sidebar/QuickConnectPanel").then((m) => ({
     default: m.QuickConnectPanel,
@@ -249,7 +255,12 @@ export function AppShell({
     OpenTabRecord[]
   >([]);
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Closed by default: rail destinations render in the main area now, so the
+  // third column only appears when something explicitly needs it (host editor).
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // True while a rail destination owns the content area. Clicking a session tab
+  // hands the area back to that session.
+  const [railViewActive, setRailViewActive] = useState(true);
   const [railView, setRailView] = useState<RailView>("hosts");
   const [remoteSyncInitialServerUrl, setRemoteSyncInitialServerUrl] = useState<
     string | undefined
@@ -1280,16 +1291,22 @@ export function AppShell({
         }
         return;
       }
-      if (type === "user-profile" || type === "admin-settings") {
-        setSidebarEditing(false);
-        setRailView(type as RailView);
-        setSidebarOpen(true);
-        return;
-      }
       const id = type;
       const singletonLabels: Partial<Record<TabType, string>> = {
         hosts: t("nav.hosts"),
         dashboard: t("nav.dashboard"),
+        credentials: t("nav.credentials"),
+        connections: t("nav.connections"),
+        snippets: t("nav.snippets"),
+        "termix-id": t("nav.termixId"),
+        "session-logs": t("nav.sessionLogs"),
+        alerts: t("nav.alerts"),
+        "quick-connect": t("nav.quickConnect"),
+        "ssh-tools": t("nav.sshTools"),
+        history: t("nav.history"),
+        "split-screen": t("nav.splitScreen"),
+        "user-profile": t("nav.userProfile"),
+        "admin-settings": t("nav.admin"),
         "host-manager": t("nav.hostManager"),
         docker: t("nav.docker"),
         tunnel: t("nav.tunnels"),
@@ -1526,13 +1543,11 @@ export function AppShell({
   // ─── Rail / sidebar ──────────────────────────────────────────────────────
 
   function handleRailClick(view: RailView) {
-    if (railView === view && sidebarOpen) {
-      setSidebarOpen(false);
-    } else {
-      if (view !== railView) setSidebarEditing(false);
-      setRailView(view);
-      setSidebarOpen(true);
-    }
+    if (view !== railView) setSidebarEditing(false);
+    setRailView(view);
+    setRailViewActive(true);
+    // The third column is only for the host editor; a rail click never opens it.
+    setSidebarOpen(false);
   }
 
   function editHostInManager(host: Host) {
@@ -1637,12 +1652,15 @@ export function AppShell({
 
   const terminalTabs = tabs.filter((t) => t.type === "terminal");
 
-  // Sidebar panel content — shared between desktop inline sidebar and mobile sheet
-  const sidebarPanelContent = (
+  // Rail destination panels, parameterised by view so the same markup serves
+  // both the sidebar and a full-width main-area tab. Rail destinations are
+  // tabs now; rendering them at 291px in a third column was the reason the
+  // content area felt cramped.
+  const renderRailPanels = (view: string) => (
     <Suspense fallback={<SidebarPanelFallback />}>
       <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
         <div
-          className={`flex flex-col flex-1 min-h-0 ${railView === "hosts" ? "" : "hidden"}`}
+          className={`flex flex-col flex-1 min-h-0 ${view === "hosts" ? "" : "hidden"}`}
         >
           <HostsPanel
             onOpenTab={(host, type) => {
@@ -1653,26 +1671,26 @@ export function AppShell({
             hostTree={realHostTree ?? undefined}
             loading={hostsLoading}
             onEditingChange={setSidebarEditing}
-            active={railView === "hosts"}
+            active={view === "hosts"}
           />
         </div>
 
         <div
-          className={`flex flex-col flex-1 min-h-0 ${railView === "credentials" ? "" : "hidden"}`}
+          className={`flex flex-col flex-1 min-h-0 ${view === "credentials" ? "" : "hidden"}`}
         >
           <CredentialsPanel
             onEditingChange={setSidebarEditing}
-            active={railView === "credentials"}
+            active={view === "credentials"}
           />
         </div>
 
-        {railView === "termix-id" && (
+        {view === "termix-id" && (
           <div className="flex flex-col flex-1 min-h-0">
             <TermixIdPanel />
           </div>
         )}
 
-        {railView === "serial" && (
+        {view === "serial" && (
           <SerialPanel
             onConnect={(config) => {
               openSerialTab(config);
@@ -1681,7 +1699,7 @@ export function AppShell({
           />
         )}
 
-        {railView === "quick-connect" && (
+        {view === "quick-connect" && (
           <QuickConnectPanel
             onConnect={(host, type) => {
               openTab(host, type);
@@ -1690,7 +1708,7 @@ export function AppShell({
           />
         )}
 
-        {railView === "ssh-tools" && (
+        {view === "ssh-tools" && (
           <div className="flex-1 min-h-0 overflow-y-auto">
             <SshToolsPanel
               terminalTabs={terminalTabs}
@@ -1699,7 +1717,7 @@ export function AppShell({
           </div>
         )}
 
-        {railView === "snippets" && (
+        {view === "snippets" && (
           <div className="flex-1 min-h-0 overflow-y-auto">
             <SnippetsPanel
               terminalTabs={terminalTabs}
@@ -1708,7 +1726,7 @@ export function AppShell({
           </div>
         )}
 
-        {railView === "history" && (
+        {view === "history" && (
           <div className="flex flex-col flex-1 min-h-0 overflow-y-auto">
             <HistoryPanel
               terminalTabs={terminalTabs}
@@ -1717,7 +1735,7 @@ export function AppShell({
           </div>
         )}
 
-        {railView === "split-screen" && (
+        {view === "split-screen" && (
           <div className="flex-1 min-h-0 overflow-y-auto">
             <SplitScreenPanel
               tabs={tabs}
@@ -1730,7 +1748,7 @@ export function AppShell({
           </div>
         )}
 
-        {railView === "connections" && (
+        {view === "connections" && (
           <div className="flex-1 min-h-0 overflow-y-auto">
             <ConnectionsPanel
               tabs={tabs}
@@ -1826,13 +1844,13 @@ export function AppShell({
           </div>
         )}
 
-        {railView === "session-logs" && (
+        {view === "session-logs" && (
           <div className="relative flex-1 min-h-0 flex flex-col">
             <SessionLogsPanel />
           </div>
         )}
 
-        {railView === "user-profile" && (
+        {view === "user-profile" && (
           <div className="flex-1 min-h-0 overflow-y-auto">
             <UserProfilePanel
               username={username}
@@ -1846,7 +1864,7 @@ export function AppShell({
           </div>
         )}
 
-        {railView === "admin-settings" && showMultiUserUI && (
+        {view === "admin-settings" && showMultiUserUI && (
           <div className="flex flex-col flex-1 min-h-0 overflow-y-auto">
             <AdminSettingsPanel
               onEditingChange={setSidebarEditing}
@@ -1858,7 +1876,7 @@ export function AppShell({
           </div>
         )}
 
-        {railView === "alerts" && (
+        {view === "alerts" && (
           <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
             <AlertsPanel />
           </div>
@@ -1866,6 +1884,8 @@ export function AppShell({
       </div>
     </Suspense>
   );
+
+  const sidebarPanelContent = renderRailPanels(railView);
 
   // Sidebar header — shared
   const sidebarHeader = (
@@ -1991,7 +2011,10 @@ export function AppShell({
                 splitMode={splitMode}
                 paneTabIds={paneTabIds}
                 focusedPaneIndex={focusedPaneIndex}
-                onSetActiveTab={setActiveTabId}
+                onSetActiveTab={(id) => {
+                  setRailViewActive(false);
+                  setActiveTabId(id);
+                }}
                 onCloseTab={closeTab}
                 onRefreshTab={refreshTab}
                 onReorderTabs={setTabs}
@@ -2008,6 +2031,39 @@ export function AppShell({
                 onToggleAppFullscreen={toggleAppFullscreen}
               />
               <div className="relative flex flex-col flex-1 min-h-0 overflow-hidden">
+                {/* Rail destination owning the content area. Sessions stay
+                    mounted underneath so switching back to a tab does not tear
+                    down a live terminal. */}
+                {railViewActive && (
+                  <div className="absolute inset-0 z-10 flex flex-col bg-background">
+                    {railView === "hosts" ? (
+                      <Suspense fallback={<SidebarPanelFallback />}>
+                        <HostsTab
+                          hostTree={realHostTree ?? undefined}
+                          onOpenTab={(host, type) => {
+                            setRailViewActive(false);
+                            openTab(host, type);
+                          }}
+                          onEditHost={editHostInManager}
+                        />
+                      </Suspense>
+                    ) : railView === "dashboard" ? (
+                      <Suspense fallback={<SidebarPanelFallback />}>
+                        <DashboardTab
+                          onOpenSingletonTab={openSingletonTab}
+                          onOpenTab={(host, type) => {
+                            setRailViewActive(false);
+                            openTab(host, type);
+                          }}
+                          isVisible
+                        />
+                      </Suspense>
+                    ) : (
+                      renderRailPanels(railView)
+                    )}
+                  </div>
+                )}
+
                 {/* Split view — always mounted when not mobile, hidden via CSS when inactive */}
                 {!isMobile && (
                   <div
