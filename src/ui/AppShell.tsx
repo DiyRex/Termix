@@ -1288,6 +1288,8 @@ export function AppShell({
       }
       const id = type;
       const singletonLabels: Partial<Record<TabType, string>> = {
+        hosts: t("nav.hosts"),
+        dashboard: t("nav.dashboard"),
         "host-manager": t("nav.hostManager"),
         docker: t("nav.docker"),
         tunnel: t("nav.tunnels"),
@@ -2079,6 +2081,8 @@ export function AppShell({
                           }),
                         renameTab,
                         saveQuickConnectHost,
+                        realHostTree ?? undefined,
+                        editHostInManager,
                       ),
                       tabNode,
                       tab.id,

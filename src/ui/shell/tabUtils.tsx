@@ -24,7 +24,7 @@ import type {
 } from "@/features/terminal/Terminal";
 import type { GuacamoleAppHandle } from "@/features/guacamole/GuacamoleApp";
 import { useIsMobile } from "@/hooks/use-mobile";
-import type { Tab, TabType, Host } from "@/types/ui-types";
+import type { Tab, TabType, Host, HostFolder } from "@/types/ui-types";
 import type { SSHHost } from "@/types";
 import { useTabsSafe } from "@/shell/TabContext";
 
@@ -72,6 +72,11 @@ const GuacamoleApp = lazy(() =>
 const DashboardTab = lazy(() =>
   import("@/dashboard/DashboardTab").then((m) => ({
     default: m.DashboardTab,
+  })),
+);
+const HostsTab = lazy(() =>
+  import("@/features/hosts/HostsTab").then((m) => ({
+    default: m.HostsTab,
   })),
 );
 const HomepageCanvas = lazy(() =>
@@ -280,10 +285,21 @@ export function renderTabContent(
   onOpenTerminalTab?: (host: Host, path?: string) => void,
   onRenameTab?: (tabId: string, newLabel: string) => void,
   onSaveQuickConnect?: (tab: Tab, host: Host) => Promise<void>,
+  hostTree?: HostFolder,
+  onEditHostInManager?: (host: Host) => void,
 ) {
   const { host, label } = tab;
 
   switch (tab.type) {
+    case "hosts":
+      return withTabSuspense(
+        <HostsTab
+          hostTree={hostTree}
+          onOpenTab={onOpenTab}
+          onEditHost={onEditHostInManager}
+        />,
+      );
+
     case "dashboard":
       return withTabSuspense(
         <DashboardTab

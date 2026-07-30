@@ -19,6 +19,7 @@ import {
   Zap,
   MoreHorizontal,
   ChevronDown,
+  LayoutDashboard,
 } from "lucide-react";
 import type { SplitMode, TabType, ToolsTab } from "@/types/ui-types";
 import { getAlertFirings } from "@/api/alerts-api";
@@ -53,6 +54,8 @@ type RailItem =
   | { kind: "tab"; tabType: TabType; icon: React.ReactNode; title: string }
   | { kind: "separator" };
 
+const PRIMARY_RAIL_TABS = new Set<string>(["hosts", "dashboard"]);
+
 const PRIMARY_RAIL_VIEWS = new Set<string>([
   "hosts",
   "credentials",
@@ -68,7 +71,21 @@ function buildRailButtons(
   hidden: Set<string>,
 ): RailItem[] {
   const all: RailItem[] = [
-    { view: "hosts", icon: <Server size={16} />, title: t("nav.hosts") },
+    // Hosts is a main-area view, not a sidebar panel: a card grid plus the
+    // details inspector needs the window, and that is what keeps a session
+    // from being squeezed into the leftover width.
+    {
+      kind: "tab",
+      tabType: "hosts" as TabType,
+      icon: <Server size={16} />,
+      title: t("nav.hosts"),
+    },
+    {
+      kind: "tab",
+      tabType: "dashboard" as TabType,
+      icon: <LayoutDashboard size={16} />,
+      title: t("nav.dashboard"),
+    },
     {
       view: "credentials",
       icon: <KeyRound size={16} />,
@@ -303,13 +320,12 @@ export function AppRail({
   // has far more surfaces than a stock SSH client, and putting all of them in
   // the rail is what made it feel cluttered, so the rest collapse behind
   // "More" and stay one click away.
-  const primaryItems = railButtons.filter(
-    (item) => item.kind === undefined && PRIMARY_RAIL_VIEWS.has(item.view),
-  );
+  const isPrimary = (item: RailItem) =>
+    (item.kind === undefined && PRIMARY_RAIL_VIEWS.has(item.view)) ||
+    (item.kind === "tab" && PRIMARY_RAIL_TABS.has(item.tabType));
+  const primaryItems = railButtons.filter(isPrimary);
   const secondaryItems = railButtons.filter(
-    (item) =>
-      item.kind !== "separator" &&
-      !(item.kind === undefined && PRIMARY_RAIL_VIEWS.has(item.view)),
+    (item) => item.kind !== "separator" && !isPrimary(item),
   );
   const secondaryActive = secondaryItems.some(
     (item) => item.kind === undefined && railView === item.view && sidebarOpen,
