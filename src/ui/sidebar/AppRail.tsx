@@ -17,6 +17,8 @@ import {
   Usb,
   User,
   Zap,
+  MoreHorizontal,
+  ChevronDown,
 } from "lucide-react";
 import type { SplitMode, TabType, ToolsTab } from "@/types/ui-types";
 import { getAlertFirings } from "@/api/alerts-api";
@@ -50,6 +52,15 @@ type RailItem =
     }
   | { kind: "tab"; tabType: TabType; icon: React.ReactNode; title: string }
   | { kind: "separator" };
+
+const PRIMARY_RAIL_VIEWS = new Set<string>([
+  "hosts",
+  "credentials",
+  "connections",
+  "snippets",
+  "termix-id",
+  "session-logs",
+]);
 
 function buildRailButtons(
   splitMode: SplitMode,
@@ -138,8 +149,8 @@ function buildRailButtons(
 }
 
 const btnBase =
-  "relative flex items-center h-7 rounded shrink-0 transition-colors gap-2.5";
-const btnStyle = { margin: "0 4px", padding: "0 8px" };
+  "relative flex items-center h-9 rounded-xl shrink-0 transition-colors gap-3";
+const btnStyle = { margin: "0 8px", padding: "0 10px" };
 
 export function AppRail({
   railView,
@@ -162,6 +173,7 @@ export function AppRail({
 }) {
   const { t } = useTranslation();
   const [hovered, setHovered] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [pinned, setPinned] = useState(
     () => localStorage.getItem("pinAppRail") === "true",
   );
@@ -287,21 +299,33 @@ export function AppRail({
     : new Set([...hiddenTabs, "termix-id"]);
   const railButtons = buildRailButtons(splitMode, t, effectiveHiddenTabs);
 
+  // Minimal-mode rail: only the six primary destinations stay visible. Termix
+  // has far more surfaces than a stock SSH client, and putting all of them in
+  // the rail is what made it feel cluttered, so the rest collapse behind
+  // "More" and stay one click away.
+  const primaryItems = railButtons.filter(
+    (item) => item.kind === undefined && PRIMARY_RAIL_VIEWS.has(item.view),
+  );
+  const secondaryItems = railButtons.filter(
+    (item) =>
+      item.kind !== "separator" &&
+      !(item.kind === undefined && PRIMARY_RAIL_VIEWS.has(item.view)),
+  );
+  const secondaryActive = secondaryItems.some(
+    (item) => item.kind === undefined && railView === item.view && sidebarOpen,
+  );
+
   return (
     <div
-      className="hidden md:flex flex-col items-stretch bg-sidebar border-r border-border shrink-0 overflow-hidden pt-2 gap-1 transition-[width] duration-200 min-h-0"
-      style={{ width: railExpanded ? 160 : 40 }}
+      className="hidden md:flex flex-col items-stretch bg-sidebar border-r border-border/40 shrink-0 overflow-hidden py-2 gap-0.5 transition-[width] duration-200 min-h-0"
+      style={{ width: railExpanded ? 208 : 56 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       <div className="flex flex-col flex-1 gap-1 overflow-y-auto scrollbar-none min-h-0">
-        {railButtons.map((item, i) =>
+        {primaryItems.map((item, i) =>
           item.kind === "separator" ? (
-            <div
-              key={`sep-${i}`}
-              className="mx-auto h-px bg-border my-0.5 shrink-0 transition-[width] duration-200"
-              style={{ width: railExpanded ? "calc(100% - 16px)" : 20 }}
-            />
+            <div key={`sep-${i}`} className="h-1 shrink-0" />
           ) : item.kind === "tab" ? (
             <button
               key={item.tabType}
@@ -316,7 +340,7 @@ export function AppRail({
                 {item.icon}
               </span>
               <span
-                className={`text-xs font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${
+                className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${
                   railExpanded ? "opacity-100 delay-75" : "opacity-0 w-0"
                 }`}
               >
@@ -330,7 +354,7 @@ export function AppRail({
               style={btnStyle}
               className={`${btnBase} ${
                 sidebarOpen && railView === item.view
-                  ? "text-accent-brand bg-accent-brand/10"
+                  ? "text-accent-brand bg-accent-brand/15 ring-1 ring-accent-brand/25"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
               }`}
             >
@@ -341,7 +365,7 @@ export function AppRail({
                 {item.icon}
               </span>
               <span
-                className={`text-xs font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${
+                className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${
                   railExpanded ? "opacity-100 delay-75" : "opacity-0 w-0"
                 }`}
               >
@@ -353,9 +377,100 @@ export function AppRail({
             </button>
           ),
         )}
+
+        {secondaryItems.length > 0 && (
+          <>
+            <button
+              onClick={() => setMoreOpen((v) => !v)}
+              style={btnStyle}
+              className={`${btnBase} mt-1 ${
+                secondaryActive && !moreOpen
+                  ? "text-accent-brand"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+              }`}
+              title={t("nav.more")}
+            >
+              <span
+                className="shrink-0 flex items-center justify-center"
+                style={{ width: 16, height: 16 }}
+              >
+                <MoreHorizontal size={16} />
+              </span>
+              <span
+                className={`flex-1 text-sm font-medium whitespace-nowrap overflow-hidden text-left transition-[opacity,width] duration-150 ${
+                  railExpanded ? "opacity-100 delay-75" : "opacity-0 w-0"
+                }`}
+              >
+                {t("nav.more")}
+              </span>
+              {railExpanded && (
+                <ChevronDown
+                  size={14}
+                  className={`shrink-0 transition-transform duration-150 ${moreOpen ? "rotate-180" : ""}`}
+                />
+              )}
+            </button>
+
+            {moreOpen &&
+              secondaryItems.map((item, i) =>
+                item.kind === "tab" ? (
+                  <button
+                    key={item.tabType}
+                    onClick={() => onOpenTab?.(item.tabType)}
+                    style={btnStyle}
+                    className={`${btnBase} text-muted-foreground hover:text-foreground hover:bg-muted/60`}
+                  >
+                    <span
+                      className="shrink-0 flex items-center justify-center"
+                      style={{ width: 16, height: 16 }}
+                    >
+                      {item.icon}
+                    </span>
+                    <span
+                      className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${
+                        railExpanded ? "opacity-100 delay-75" : "opacity-0 w-0"
+                      }`}
+                    >
+                      {item.title}
+                    </span>
+                  </button>
+                ) : item.kind === undefined ? (
+                  <button
+                    key={item.view}
+                    onClick={() => onRailClick(item.view)}
+                    style={btnStyle}
+                    className={`${btnBase} ${
+                      sidebarOpen && railView === item.view
+                        ? "text-accent-brand bg-accent-brand/15 ring-1 ring-accent-brand/25"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                    }`}
+                  >
+                    <span
+                      className="shrink-0 flex items-center justify-center"
+                      style={{ width: 16, height: 16 }}
+                    >
+                      {item.icon}
+                    </span>
+                    <span
+                      className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${
+                        railExpanded ? "opacity-100 delay-75" : "opacity-0 w-0"
+                      }`}
+                    >
+                      {item.title}
+                    </span>
+                    {item.dot && (
+                      <span className="absolute top-0.5 right-0.5 size-1.5 rounded-full bg-accent-brand" />
+                    )}
+                  </button>
+                ) : (
+                  <span key={`x-${i}`} />
+                ),
+              )}
+          </>
+        )}
       </div>
 
-      <div className="shrink-0 flex flex-col gap-1 border-t border-border pt-1 pb-1">
+      <div className="shrink-0 flex flex-col gap-0.5 pt-2 pb-1">
         {[
           {
             view: "alerts" as RailView,
@@ -399,13 +514,13 @@ export function AppRail({
               )}
             </span>
             <span
-              className={`text-xs font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${railExpanded ? "opacity-100 delay-75" : "opacity-0 w-0"}`}
+              className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${railExpanded ? "opacity-100 delay-75" : "opacity-0 w-0"}`}
             >
               {item.title}
             </span>
           </button>
         ))}
-        <div className="mx-2 my-1 border-t border-border" />
+        <div className="mx-3 my-1.5 border-t border-border/50" />
         <button
           onClick={onLogout}
           style={btnStyle}
@@ -418,17 +533,17 @@ export function AppRail({
             <LogOut size={16} />
           </span>
           <span
-            className={`text-xs font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${railExpanded ? "opacity-100 delay-75" : "opacity-0 w-0"}`}
+            className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${railExpanded ? "opacity-100 delay-75" : "opacity-0 w-0"}`}
           >
             {t("common.logout")}
           </span>
         </button>
       </div>
 
-      <div className="shrink-0 border-t border-border">
+      <div className="shrink-0 mt-1 pt-1 border-t border-border/50">
         <button
-          className="flex items-center gap-2.5 w-full h-10 text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-          style={{ padding: "0 8px" }}
+          className="flex items-center gap-3 h-11 mx-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+          style={{ padding: "0 10px" }}
         >
           <div
             className="rounded-full bg-accent-brand/20 border border-accent-brand/30 flex items-center justify-center font-bold text-accent-brand shrink-0"
@@ -441,10 +556,10 @@ export function AppRail({
               railExpanded ? "opacity-100 delay-75" : "opacity-0"
             }`}
           >
-            <span className="text-xs font-semibold leading-tight whitespace-nowrap">
+            <span className="text-sm font-semibold leading-tight whitespace-nowrap">
               {username || "User"}
             </span>
-            <span className="text-[10px] text-muted-foreground leading-tight whitespace-nowrap">
+            <span className="text-xs text-muted-foreground leading-tight whitespace-nowrap">
               {isAdmin ? t("nav.roleAdministrator") : t("nav.roleUser")}
             </span>
           </div>

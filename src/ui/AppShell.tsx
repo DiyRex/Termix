@@ -298,6 +298,34 @@ export function AppShell({
     }
   }, [isMobile]);
 
+  // ─── Focus mode ──────────────────────────────────────────────────────────
+  // A live session should get the whole window; browsing data should not.
+  // Collapse the sidebar when the active tab is an interactive session and
+  // restore whatever the user had when they navigate back to a data view, so
+  // the terminal is never squeezed into whatever is left over.
+  const sidebarOpenBeforeSession = useRef(sidebarOpen);
+  const wasSessionTab = useRef(false);
+  useEffect(() => {
+    if (isMobile) return;
+    const activeType = tabs.find((t) => t.id === activeTabId)?.type;
+    const isSession =
+      activeType === "terminal" ||
+      activeType === "rdp" ||
+      activeType === "vnc" ||
+      activeType === "telnet";
+
+    if (isSession && !wasSessionTab.current) {
+      sidebarOpenBeforeSession.current = sidebarOpen;
+      setSidebarOpen(false);
+    } else if (!isSession && wasSessionTab.current) {
+      setSidebarOpen(sidebarOpenBeforeSession.current);
+    }
+    wasSessionTab.current = isSession;
+    // sidebarOpen is intentionally omitted: including it would re-run on the
+    // user's own manual toggle and immediately undo it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTabId, tabs, isMobile]);
+
   useEffect(() => {
     getUserInfo()
       .then((info) => {

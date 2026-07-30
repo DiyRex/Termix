@@ -554,7 +554,8 @@
     "alerts": "Alerts",
     "serial": "Serial",
     "roleAdministrator": "Administrator",
-    "roleUser": "User"
+    "roleUser": "User",
+    "more": "More"
   },
   "hosts": {
     "hosts": "Hosts",
