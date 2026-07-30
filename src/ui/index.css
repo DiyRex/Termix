@@ -52,6 +52,7 @@
 @custom-variant tokyo-night (&:is(.tokyo-night *));
 @custom-variant one-dark (&:is(.one-dark *));
 @custom-variant gruvbox (&:is(.gruvbox *));
+@custom-variant termius (&:is(.termius *));
 
 @theme inline {
   --font-heading: var(--font-mono);
@@ -438,6 +439,49 @@
   --sidebar-accent-foreground: #ebdbb2;
   --sidebar-border: rgba(196, 181, 157, 0.18);
   --sidebar-ring: #fabd2f;
+}
+
+/* ── Termius ────────────────────────────────────────────────── */
+/* Blue-tinted slate rather than neutral grey: the whole surface ramp keeps a
+   ~260deg hue so panels read navy, not black. Primary action is the signature
+   green; card sits two steps above the background so the host/key grid floats
+   without needing heavy borders. */
+.termius {
+  --background: #1a2231;
+  --foreground: #eef2f7;
+  --card: #232d40;
+  --card-foreground: #eef2f7;
+  --popover: #232d40;
+  --popover-foreground: #eef2f7;
+  --primary: #3fcb82;
+  --primary-foreground: #0f1520;
+  --secondary: #2a3548;
+  --secondary-foreground: #eef2f7;
+  --surface: #1e2837;
+  --surface-dim: #161e2c;
+  --muted: #2a3548;
+  --muted-foreground: #8996a9;
+  --accent: #2a3548;
+  --accent-foreground: #eef2f7;
+  --destructive: #e5484d;
+  --border: rgba(137, 150, 169, 0.2);
+  --input: rgba(137, 150, 169, 0.16);
+  --ring: #3fcb82;
+  --chart-1: #3fcb82;
+  --chart-2: #2f5f9e;
+  --chart-3: #e5a13f;
+  --chart-4: #e5484d;
+  --chart-5: #8996a9;
+  /* Termius cards are noticeably rounder than the Termix default. */
+  --radius: 0.75rem;
+  --sidebar: #161e2c;
+  --sidebar-foreground: #eef2f7;
+  --sidebar-primary: #3fcb82;
+  --sidebar-primary-foreground: #0f1520;
+  --sidebar-accent: #2a3548;
+  --sidebar-accent-foreground: #eef2f7;
+  --sidebar-border: rgba(137, 150, 169, 0.2);
+  --sidebar-ring: #3fcb82;
 }
 
 @layer base {
