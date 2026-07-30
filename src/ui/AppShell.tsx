@@ -36,6 +36,11 @@ const HostsPanel = lazy(() =>
 const HostsTab = lazy(() =>
   import("@/features/hosts/HostsTab").then((m) => ({ default: m.HostsTab })),
 );
+const SettingsTab = lazy(() =>
+  import("@/features/settings/SettingsTab").then((m) => ({
+    default: m.SettingsTab,
+  })),
+);
 const CredentialsTab = lazy(() =>
   import("@/features/credentials/CredentialsTab").then((m) => ({
     default: m.CredentialsTab,
@@ -2050,6 +2055,37 @@ export function AppShell({
                             openTab(host, type);
                           }}
                           onEditHost={editHostInManager}
+                        />
+                      </Suspense>
+                    ) : railView === "settings" ? (
+                      <Suspense fallback={<SidebarPanelFallback />}>
+                        <SettingsTab
+                          sections={[
+                            {
+                              id: "user-profile",
+                              label: t("nav.userProfile"),
+                              node: renderRailPanels("user-profile"),
+                            },
+                            {
+                              id: "alerts",
+                              label: t("nav.alerts"),
+                              node: renderRailPanels("alerts"),
+                            },
+                            {
+                              id: "ssh-tools",
+                              label: t("nav.sshTools"),
+                              node: renderRailPanels("ssh-tools"),
+                            },
+                            ...(showMultiUserUI && isAdmin
+                              ? [
+                                  {
+                                    id: "admin-settings",
+                                    label: t("nav.admin"),
+                                    node: renderRailPanels("admin-settings"),
+                                  },
+                                ]
+                              : []),
+                          ]}
                         />
                       </Suspense>
                     ) : railView === "credentials" ? (

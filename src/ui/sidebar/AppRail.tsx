@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Bell,
   Clock,
   Fingerprint,
   Hammer,
@@ -15,7 +14,6 @@ import {
   Server,
   Settings,
   Usb,
-  User,
   Zap,
   MoreHorizontal,
   ChevronDown,
@@ -28,6 +26,7 @@ import { isElectron } from "@/lib/electron";
 export type RailView =
   | "hosts"
   | "dashboard"
+  | "settings"
   | "credentials"
   | "termix-id"
   | "quick-connect"
@@ -486,24 +485,10 @@ export function AppRail({
       <div className="shrink-0 flex flex-col gap-0.5 pt-2 pb-1">
         {[
           {
-            view: "alerts" as RailView,
-            icon: <Bell size={16} />,
-            title: t("nav.alerts"),
+            view: "settings" as RailView,
+            icon: <Settings size={16} />,
+            title: t("nav.settings"),
           },
-          {
-            view: "user-profile" as RailView,
-            icon: <User size={16} />,
-            title: t("nav.userProfile"),
-          },
-          ...(isAdmin
-            ? [
-                {
-                  view: "admin-settings" as RailView,
-                  icon: <Settings size={16} />,
-                  title: t("nav.admin"),
-                },
-              ]
-            : []),
         ].map((item) => (
           <button
             key={item.view}
@@ -520,7 +505,7 @@ export function AppRail({
               style={{ width: 16, height: 16 }}
             >
               {item.icon}
-              {item.view === "alerts" && unreadAlerts > 0 && (
+              {item.view === "settings" && unreadAlerts > 0 && (
                 <span className="absolute -top-1 -right-1 flex size-3 items-center justify-center rounded-full bg-destructive text-[8px] font-bold text-white leading-none">
                   {unreadAlerts > 9 ? "9+" : unreadAlerts}
                 </span>

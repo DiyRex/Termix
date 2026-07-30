@@ -564,7 +564,8 @@
     "serial": "Serial",
     "roleAdministrator": "Administrator",
     "roleUser": "User",
-    "more": "More"
+    "more": "More",
+    "settings": "Settings"
   },
   "hosts": {
     "hosts": "Hosts",
