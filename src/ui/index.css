@@ -482,6 +482,11 @@
   --sidebar-accent-foreground: #eef2f7;
   --sidebar-border: rgba(137, 150, 169, 0.2);
   --sidebar-ring: #3fcb82;
+  /* The other named themes intentionally inherit Termix's orange brand accent
+     from :root. This theme overrides it: the primary action colour is the whole
+     point of matching Termius, and it drives the login button, active tab and
+     Connect button. */
+  --accent-brand: #3fcb82;
 }
 
 @layer base {
