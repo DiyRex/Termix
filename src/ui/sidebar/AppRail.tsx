@@ -187,8 +187,10 @@ export function AppRail({
   const { t } = useTranslation();
   const [hovered, setHovered] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  // Expanded by default: the rail is the primary navigation now, so labels
+  // should be visible without hovering. Users can still unpin it.
   const [pinned, setPinned] = useState(
-    () => localStorage.getItem("pinAppRail") === "true",
+    () => localStorage.getItem("pinAppRail") !== "false",
   );
   const [expandOnHover, setExpandOnHover] = useState(
     () => localStorage.getItem("expandAppRailOnHover") !== "false",
@@ -247,7 +249,7 @@ export function AppRail({
 
   useEffect(() => {
     const pinHandler = () =>
-      setPinned(localStorage.getItem("pinAppRail") === "true");
+      setPinned(localStorage.getItem("pinAppRail") !== "false");
     const hoverHandler = () =>
       setExpandOnHover(
         localStorage.getItem("expandAppRailOnHover") !== "false",
