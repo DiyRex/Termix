@@ -181,7 +181,7 @@ function FieldLabel({
   return (
     <label
       htmlFor={htmlFor}
-      className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+      className="text-xs font-medium text-muted-foreground"
     >
       {children}
     </label>
@@ -1273,12 +1273,12 @@ export function Auth({ onLogin }: AuthProps) {
               view === "register" ||
               view === "external") && (
               <div className="flex flex-col gap-5">
-                <div className="flex border border-border overflow-hidden">
+                <div className="flex gap-1 rounded-lg border border-border bg-muted/40 p-1">
                   {TAB_ITEMS.filter((item) => item.show).map((item) => (
                     <button
                       key={item.id}
                       onClick={() => switchView(item.id)}
-                      className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors ${view === item.id ? "bg-accent-brand text-background" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
+                      className={`flex-1 rounded-md py-2 text-sm font-medium transition-colors ${view === item.id ? "bg-accent-brand text-background" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}
                     >
                       {item.label}
                     </button>
