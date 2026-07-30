@@ -201,7 +201,6 @@ export interface UserInfo {
   is_oidc: boolean;
   password_hash?: string;
   data_unlocked?: boolean;
-  show_donation_modal?: boolean;
 }
 
 interface UserCount {
@@ -1678,14 +1677,6 @@ export async function getUserInfo(): Promise<UserInfo> {
     return response.data;
   } catch (error) {
     handleApiError(error, "fetch user info");
-  }
-}
-
-export async function dismissDonationModal(): Promise<void> {
-  try {
-    await authApi.post("/users/me/dismiss-donation-modal");
-  } catch (error) {
-    handleApiError(error, "dismiss donation modal");
   }
 }
 

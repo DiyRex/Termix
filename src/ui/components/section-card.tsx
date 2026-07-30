@@ -77,10 +77,10 @@ export function FakeSwitch({
         if (checked === undefined) setInternalOn(next);
         onChange?.(next);
       }}
-      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center border-2 transition-colors ${on ? "bg-accent-brand border-accent-brand" : "bg-muted border-border"}`}
+      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 transition-colors ${on ? "bg-accent-brand border-accent-brand" : "bg-muted border-border"}`}
     >
       <span
-        className={`pointer-events-none inline-block h-3 w-3 bg-background shadow-sm transition-transform ${on ? "translate-x-4" : "translate-x-0.5"}`}
+        className={`pointer-events-none inline-block h-3 w-3 rounded-full bg-background shadow-sm transition-transform ${on ? "translate-x-4" : "translate-x-0.5"}`}
       />
     </button>
   );

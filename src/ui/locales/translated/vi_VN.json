@@ -2462,7 +2462,6 @@
     "support": "Hỗ trợ",
     "discord": "Discord",
     "docs": "Tài liệu",
-    "donate": "Ủng hộ",
     "serverOverview": "Tổng quan máy chủ",
     "version": "Phiên bản",
     "upToDate": "Đã cập nhật",
@@ -2504,13 +2503,6 @@
     "justNow": "vừa xong",
     "serviceLinks": "Liên kết Dịch vụ",
     "homepagePreview": "Xem trước Trang chủ"
-  },
-  "donation": {
-    "title": "Bạn thích Termix chứ?",
-    "body": "Termix là phần mềm miễn phí và mã nguồn mở, được xây dựng và duy trì bởi một nhóm hai người trong thời gian rảnh. Nếu nó đã thay thế một công cụ thương mại mà bạn đáng lẽ phải trả tiền, một khoản quyên góp sẽ giúp trang trải chi phí hosting và duy trì phát triển. Hiện tại, quyên góp chỉ chấp nhận tiền mã hóa.",
-    "milestones": "Quyên góp cũng giúp tài trợ thời gian nghiên cứu và học hỏi những gì cần thiết để xây dựng các tính năng như hỗ trợ SAML và Kubernetes. Xem tiến độ trên trang quyên góp.",
-    "cta": "Quyên góp",
-    "dismiss": "Để sau"
   },
   "dashboardTab": {
     "stable": "ỔN ĐỊNH",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "Một số trình duyệt có thể yêu cầu quyền truy cập clipboard khi sử dụng lần đầu."
       },
       "userProfile": {
-        "donateTitle": "Duy trì Termix",
-        "donateDescription": "Termix là phần mềm miễn phí, tự lưu trữ, và được xây dựng bởi một vài người trong thời gian rảnh. Nếu nó giúp bạn tiết kiệm thời gian hoặc tiền bạc, một khoản quyên góp tiền mã hóa sẽ giúp duy trì dự án.",
-        "donateMilestones": "Các khoản quyên góp giúp tài trợ thời gian nghiên cứu và học hỏi để xây dựng hỗ trợ SAML, Kubernetes và Agent. Xem tiến độ và quyên góp.",
-        "donateButton": "Quyên góp tiền mã hóa",
         "storageModeLocal": "Trình duyệt",
         "storageModeCloud": "Cơ sở dữ liệu",
         "storageModeDescription": "Trình duyệt chỉ lưu cài đặt trong trình duyệt này. Cơ sở dữ liệu đồng bộ với máy chủ và tải trên mọi thiết bị.",

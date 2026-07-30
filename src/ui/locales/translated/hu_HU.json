@@ -2462,7 +2462,6 @@
     "support": "Támogatás",
     "discord": "Viszály",
     "docs": "Dokumentumok",
-    "donate": "Adományoz",
     "serverOverview": "Szerver áttekintése",
     "version": "Változat",
     "upToDate": "Naprakész",
@@ -2504,13 +2503,6 @@
     "justNow": "éppen most",
     "serviceLinks": "Szolgáltatási linkek",
     "homepagePreview": "Kezdőlap előnézete"
-  },
-  "donation": {
-    "title": "Élvezed a Termixet?",
-    "body": "A Termix ingyenes és nyílt forráskódú, egy kétfős csapat fejleszti és tartja karban a szabadidőnkben. Ha egy olyan kereskedelmi eszközt vált ki, amelyért egyébként fizetne, egy adomány segít fedezni a tárhelyköltségeket és fenntartja a fejlesztést. Jelenleg az adományok kizárólag kriptovalutákban fogadhatók.",
-    "milestones": "Az adományok segítenek finanszírozni az olyan funkciók kutatását és megismerését is, mint a SAML és a Kubernetes támogatása. A folyamat előrehaladását az adományozási oldalon tekintheti meg.",
-    "cta": "Adományoz",
-    "dismiss": "Talán később"
   },
   "dashboardTab": {
     "stable": "STABIL",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "Egyes böngészőkben első használatkor vágólap-engedélyt kérhet."
       },
       "userProfile": {
-        "donateTitle": "Tartsd életben a Termixet",
-        "donateDescription": "A Termix ingyenes, saját tárhelyen üzemel, és csak néhány ember fejlesztette a szabadidejében. Ha időt vagy pénzt takarított meg vele, egy kriptovaluta-adomány segíthet a működésben.",
-        "donateMilestones": "Az adományok segítenek finanszírozni a kutatást és a SAML, a Kubernetes és az Agent-támogatás kiépítéséhez szükséges dolgok megismerését. Tekintse meg a haladást, és adományozzon.",
-        "donateButton": "Adományozz kriptovalutát",
         "storageModeLocal": "Böngésző",
         "storageModeCloud": "Adatbázis",
         "storageModeDescription": "A böngésző csak ebben a böngészőben tárolja a beállításokat. Az adatbázis szinkronizálódik a szerverrel, és bármilyen eszközön betöltődik.",

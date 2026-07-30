@@ -818,9 +818,8 @@ const migrateSchema = () => {
   // CURRENT_TIMESTAMP, so the column is added empty and backfilled below.
   addColumnIfNotExists("users", "registered_at", "TEXT");
   if (!hadRegisteredAtColumn) {
-    // Pre-existing users are backdated past the 30 day mark so they see the
-    // donation modal immediately on upgrade instead of waiting a fresh
-    // 30 days as if they had just registered.
+    // Pre-existing users are backdated so they are not treated as having just
+    // registered on upgrade.
     try {
       sqlite.exec(
         `UPDATE users SET registered_at = datetime('now', '-31 days') WHERE registered_at IS NULL`,
@@ -852,6 +851,9 @@ const migrateSchema = () => {
       );
     }
   }
+  // Retained only so existing databases still satisfy the schema; the donation
+  // reminder itself is removed from this build. Dropping the column would need
+  // a table rebuild for no benefit.
   addColumnIfNotExists(
     "users",
     "donation_modal_dismissed",

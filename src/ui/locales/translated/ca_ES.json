@@ -2462,7 +2462,6 @@
     "support": "Suport",
     "discord": "Discòrdia",
     "docs": "Documents",
-    "donate": "Donar",
     "serverOverview": "Visió general del servidor",
     "version": "Versió",
     "upToDate": "Actualitzat",
@@ -2504,13 +2503,6 @@
     "justNow": "ara mateix",
     "serviceLinks": "Enllaços de servei",
     "homepagePreview": "Vista prèvia de la pàgina d'inici"
-  },
-  "donation": {
-    "title": "T'agrada Termix?",
-    "body": "Termix és gratuït i de codi obert, construït i mantingut per un equip de dues persones en el nostre temps lliure. Si substitueix una eina comercial per la qual altrament estaríeu pagant, una donació ajuda a cobrir els costos d'allotjament i manté el desenvolupament en marxa. De moment, les donacions són només de criptomoneda.",
-    "milestones": "Les donacions també ajuden a finançar el temps per investigar i aprendre què cal per crear funcions com ara la compatibilitat amb SAML i Kubernetes. Vegeu el progrés a la pàgina de donacions.",
-    "cta": "Donar",
-    "dismiss": "Potser més tard"
   },
   "dashboardTab": {
     "stable": "ESTABLE",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "Pot demanar permisos al porta-retalls en el primer ús en alguns navegadors."
       },
       "userProfile": {
-        "donateTitle": "Mantingueu viva la Termix",
-        "donateDescription": "Termix és gratuït, s'allotja per si mateix i només l'han creat unes poques persones en el seu temps lliure. Si t'ha estalviat temps o diners, una donació de criptomonedes t'ajudarà a mantenir-lo en marxa.",
-        "donateMilestones": "Els donatius ajuden a finançar el temps per investigar i aprendre què cal per construir suport per a SAML, Kubernetes i Agents. Vegeu el progrés i feu una donació.",
-        "donateButton": "Dona criptomonedes",
         "storageModeLocal": "Navegador",
         "storageModeCloud": "Base de dades",
         "storageModeDescription": "El navegador només emmagatzema la configuració en aquest navegador. La base de dades es sincronitza amb el servidor i es carrega en qualsevol dispositiu.",

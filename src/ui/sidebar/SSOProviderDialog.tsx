@@ -349,10 +349,10 @@ export function SSOProviderDialog({
             <button
               type="button"
               onClick={() => setEnabled((v) => !v)}
-              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center border-2 transition-colors ${enabled ? "bg-accent-brand border-accent-brand" : "bg-muted border-border"}`}
+              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 transition-colors ${enabled ? "bg-accent-brand border-accent-brand" : "bg-muted border-border"}`}
             >
               <span
-                className={`pointer-events-none inline-block h-3 w-3 bg-background shadow-sm transition-transform ${enabled ? "translate-x-4" : "translate-x-0.5"}`}
+                className={`pointer-events-none inline-block h-3 w-3 rounded-full bg-background shadow-sm transition-transform ${enabled ? "translate-x-4" : "translate-x-0.5"}`}
               />
             </button>
           </div>
@@ -625,10 +625,10 @@ function LDAPConfigFields({
             <button
               type="button"
               onClick={() => setLdapField("useTLS", !ldap.useTLS)}
-              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center border-2 transition-colors ${ldap.useTLS ? "bg-accent-brand border-accent-brand" : "bg-muted border-border"}`}
+              className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 transition-colors ${ldap.useTLS ? "bg-accent-brand border-accent-brand" : "bg-muted border-border"}`}
             >
               <span
-                className={`pointer-events-none inline-block h-3 w-3 bg-background shadow-sm transition-transform ${ldap.useTLS ? "translate-x-4" : "translate-x-0.5"}`}
+                className={`pointer-events-none inline-block h-3 w-3 rounded-full bg-background shadow-sm transition-transform ${ldap.useTLS ? "translate-x-4" : "translate-x-0.5"}`}
               />
             </button>
             <span className="text-[10px] text-muted-foreground">

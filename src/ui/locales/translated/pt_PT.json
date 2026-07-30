@@ -2462,7 +2462,6 @@
     "support": "Suporte",
     "discord": "Discord",
     "docs": "Documentação",
-    "donate": "Doar",
     "serverOverview": "Visão Geral do Servidor",
     "version": "Versão",
     "upToDate": "Atualizado",
@@ -2504,13 +2503,6 @@
     "justNow": "agora mesmo",
     "serviceLinks": "Links de Serviço",
     "homepagePreview": "Pré-visualização da Página Inicial"
-  },
-  "donation": {
-    "title": "Está a gostar do Termix?",
-    "body": "O Termix é gratuito e de código aberto, desenvolvido e mantido por uma equipa de duas pessoas nos nossos tempos livres. Se substituiu uma ferramenta comercial pela qual estaria a pagar, um donativo ajuda a cobrir os custos de alojamento e mantém o desenvolvimento ativo. De momento, os donativos são apenas em criptomoedas.",
-    "milestones": "Os donativos também ajudam a financiar o tempo para pesquisar e aprender o necessário para criar funcionalidades como suporte para SAML e Kubernetes. Veja o progresso na página de donativos.",
-    "cta": "Doar",
-    "dismiss": "Talvez mais tarde"
   },
   "dashboardTab": {
     "stable": "ESTÁVEL",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "Pode solicitar permissão para aceder à área de transferência na primeira utilização em alguns navegadores."
       },
       "userProfile": {
-        "donateTitle": "Mantenha o Termix ativo",
-        "donateDescription": "O Termix é gratuito, auto-hospedado e desenvolvido por apenas algumas pessoas no seu tempo livre. Se lhe poupou tempo ou dinheiro, uma doação em criptomoeda ajuda a mantê-lo a funcionar.",
-        "donateMilestones": "As doações ajudam a financiar o tempo para investigar e aprender o que é necessário para implementar suporte para SAML, Kubernetes e Agente. Veja o progresso e doe.",
-        "donateButton": "Doar criptomoeda",
         "storageModeLocal": "Navegador",
         "storageModeCloud": "Base de Dados",
         "storageModeDescription": "O navegador guarda as definições apenas neste navegador. A base de dados sincroniza com o servidor e carrega em qualquer dispositivo.",

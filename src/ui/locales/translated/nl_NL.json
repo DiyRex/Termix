@@ -2462,7 +2462,6 @@
     "support": "Steun",
     "discord": "Meningsverschil",
     "docs": "Dokters",
-    "donate": "Doneer",
     "serverOverview": "Serveroverzicht",
     "version": "Versie",
     "upToDate": "Actueel",
@@ -2504,13 +2503,6 @@
     "justNow": "zojuist",
     "serviceLinks": "Servicelinks",
     "homepagePreview": "Startpagina-voorbeeld"
-  },
-  "donation": {
-    "title": "Vind je Termix lekker?",
-    "body": "Termix is gratis en open source, ontwikkeld en onderhouden door een team van twee personen in hun vrije tijd. Als het een commerciële tool heeft vervangen waar je anders voor zou betalen, helpt een donatie om de hostingkosten te dekken en de ontwikkeling voort te zetten. Op dit moment accepteren we alleen donaties in cryptovaluta.",
-    "milestones": "Donaties helpen ook bij het financieren van de tijd die nodig is voor onderzoek en het leren van wat vereist is om functies zoals SAML- en Kubernetes-ondersteuning te ontwikkelen. Bekijk de voortgang op de donatiepagina.",
-    "cta": "Doneer",
-    "dismiss": "Misschien later"
   },
   "dashboardTab": {
     "stable": "STABIEL",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "In sommige browsers kan bij het eerste gebruik om toestemming voor het gebruik van het klembord worden gevraagd."
       },
       "userProfile": {
-        "donateTitle": "Houd Termix in leven",
-        "donateDescription": "Termix is gratis, zelf te hosten en is ontwikkeld door slechts een paar mensen in hun vrije tijd. Als het je tijd of geld heeft bespaard, helpt een cryptodonatie om het project draaiende te houden.",
-        "donateMilestones": "Donaties helpen ons de tijd te financieren die nodig is voor onderzoek en het leren van de benodigde kennis om SAML-, Kubernetes- en Agent-ondersteuning te ontwikkelen. Bekijk de voortgang en doneer.",
-        "donateButton": "Doneer crypto",
         "storageModeLocal": "Browser",
         "storageModeCloud": "Database",
         "storageModeDescription": "De browser slaat instellingen alleen in deze browser op. De database synchroniseert met de server en laadt op elk apparaat.",

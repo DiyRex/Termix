@@ -125,12 +125,10 @@ import {
   createSSHHost,
   getActiveSessions,
   getUserPreferences,
-  dismissDonationModal,
   isElectron,
   type UserPreferences,
   type OpenTabRecord,
 } from "@/main-axios";
-import { DonationReminderModal } from "@/user/DonationReminderModal.tsx";
 import { RemoteSyncBanner } from "@/components/RemoteSyncBanner.tsx";
 import { MigrationNoticeDialog } from "@/components/MigrationNoticeDialog.tsx";
 import { dbHealthMonitor } from "@/lib/db-health-monitor";
@@ -247,7 +245,6 @@ export function AppShell({
   const [isRemoteSyncConnected] = useState(false);
   const showMultiUserUI = isAdmin && (!isElectron() || isRemoteSyncConnected);
   const [userId, setUserId] = useState<string | null>(null);
-  const [showDonationModal, setShowDonationModal] = useState(false);
   const [backgroundTabRecords, setBackgroundTabRecords] = useState<
     OpenTabRecord[]
   >([]);
@@ -323,7 +320,6 @@ export function AppShell({
     wasSessionTab.current = isSession;
     // sidebarOpen is intentionally omitted: including it would re-run on the
     // user's own manual toggle and immediately undo it.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTabId, tabs, isMobile]);
 
   useEffect(() => {
@@ -331,14 +327,8 @@ export function AppShell({
       .then((info) => {
         setIsAdmin(info.is_admin);
         setUserId(info.userId);
-        setShowDonationModal(!!info.show_donation_modal);
       })
       .catch(() => setIsAdmin(false));
-  }, []);
-
-  const handleDismissDonationModal = useCallback(() => {
-    setShowDonationModal(false);
-    dismissDonationModal().catch(() => {});
   }, []);
 
   const toggleAppFullscreen = useCallback(async () => {
@@ -2144,10 +2134,6 @@ export function AppShell({
       <Suspense fallback={null}>
         <AlertManager userId={userId} loggedIn={!!username} />
       </Suspense>
-      <DonationReminderModal
-        open={showDonationModal}
-        onDismiss={handleDismissDonationModal}
-      />
     </ServerStatusProvider>
   );
 }

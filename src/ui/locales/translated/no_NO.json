@@ -2462,7 +2462,6 @@
     "support": "Støtte",
     "discord": "Disharmoni",
     "docs": "Dokumenter",
-    "donate": "Donere",
     "serverOverview": "Serveroversikt",
     "version": "Versjon",
     "upToDate": "Oppdatert",
@@ -2504,13 +2503,6 @@
     "justNow": "akkurat nå",
     "serviceLinks": "Tjenestelenker",
     "homepagePreview": "Forhåndsvisning av hjemmeside"
-  },
-  "donation": {
-    "title": "Liker du Termix?",
-    "body": "Termix er gratis og åpen kildekode, bygget og vedlikeholdt av et team på to personer på fritiden. Hvis det erstatter et kommersielt verktøy du ellers ville betalt for, bidrar en donasjon til å dekke hostingkostnader og holde utviklingen i gang. Per nå er donasjoner kun kryptovaluta.",
-    "milestones": "Donasjoner bidrar også til å finansiere tiden som er nødvendig for å undersøke og lære hva som trengs for å bygge funksjoner som SAML og Kubernetes-støtte. Se fremdriften på donasjonssiden.",
-    "cta": "Donere",
-    "dismiss": "Kanskje senere"
   },
   "dashboardTab": {
     "stable": "STABIL",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "Kan be om tillatelse til utklippstavlen ved første gangs bruk i noen nettlesere."
       },
       "userProfile": {
-        "donateTitle": "Hold Termix i live",
-        "donateDescription": "Termix er gratis, selvhostet og bygget av bare noen få personer på fritiden. Hvis det har spart deg tid eller penger, bidrar en kryptodonasjon til å holde det gående.",
-        "donateMilestones": "Donasjoner bidrar til å finansiere tiden som er nødvendig for å undersøke og lære hva som trengs for å bygge SAML-, Kubernetes- og agentstøtte. Se fremdriften og doner.",
-        "donateButton": "Doner krypto",
         "storageModeLocal": "Nettleser",
         "storageModeCloud": "Database",
         "storageModeDescription": "Nettleseren lagrer innstillinger bare i denne nettleseren. Databasen synkroniseres med serveren og lastes inn på en hvilken som helst enhet.",

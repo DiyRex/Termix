@@ -2462,7 +2462,6 @@
     "support": "Support",
     "discord": "Discord",
     "docs": "Documentation",
-    "donate": "Faire un don",
     "serverOverview": "Vue d'ensemble du serveur",
     "version": "Version",
     "upToDate": "À jour",
@@ -2504,13 +2503,6 @@
     "justNow": "à l'instant",
     "serviceLinks": "Liens de service",
     "homepagePreview": "Aperçu de la page d'accueil"
-  },
-  "donation": {
-    "title": "Vous appréciez Termix ?",
-    "body": "Termix est gratuit et open source, conçu et maintenu par une équipe de deux personnes sur notre temps libre. S'il remplace un outil commercial pour lequel vous auriez autrement payé, un don aide à couvrir les coûts d'hébergement et à poursuivre le développement. Pour le moment, les dons sont uniquement en cryptomonnaie.",
-    "milestones": "Les dons aident également à financer le temps nécessaire à la recherche et à l'apprentissage pour développer des fonctionnalités telles que la prise en charge de SAML et Kubernetes. Consultez la progression sur la page des dons.",
-    "cta": "Faire un don",
-    "dismiss": "Peut-être plus tard"
   },
   "dashboardTab": {
     "stable": "STABLE",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "Il se peut que certains navigateurs demandent l'autorisation d'accéder au presse-papiers lors de la première utilisation."
       },
       "userProfile": {
-        "donateTitle": "Soutenir Termix",
-        "donateDescription": "Termix est gratuit, auto-hébergé et conçu par seulement quelques personnes pendant leur temps libre. Si cela vous a fait gagner du temps ou de l'argent, un don en crypto aide à le maintenir.",
-        "donateMilestones": "Les dons aident à financer le temps de recherche et d'apprentissage nécessaire pour développer le support SAML, Kubernetes et Agent. Voir les progrès et faire un don.",
-        "donateButton": "Faire un don en crypto",
         "storageModeLocal": "Navigateur",
         "storageModeCloud": "Base de données",
         "storageModeDescription": "Le navigateur stocke les paramètres uniquement dans ce navigateur. La base de données synchronise avec le serveur et charge sur n'importe quel appareil.",

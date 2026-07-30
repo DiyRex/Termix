@@ -16,10 +16,8 @@ import {
   FolderOpen,
   FolderSearch,
   Box,
-  Globe,
   Plus,
   MessagesSquare,
-  LifeBuoy,
   Search,
   Activity,
   Network,
@@ -528,49 +526,6 @@ export function CommandPalette({
                 )}
               </CommandGroup>
             </div>
-
-            <CommandSeparator className="my-2" />
-
-            <CommandGroup heading={t("commandPalette.links")} className="px-2">
-              <div className="grid grid-cols-3 gap-1">
-                <CommandItem
-                  onSelect={() =>
-                    window.open(
-                      "https://github.com/Termix-SSH/Termix",
-                      "_blank",
-                    )
-                  }
-                  className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent-brand/10 cursor-pointer"
-                >
-                  <Globe className="size-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">GitHub</span>
-                </CommandItem>
-                <CommandItem
-                  onSelect={() =>
-                    window.open(
-                      "https://discord.com/invite/jVQGdvHDrf",
-                      "_blank",
-                    )
-                  }
-                  className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent-brand/10 cursor-pointer"
-                >
-                  <MessagesSquare className="size-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Discord</span>
-                </CommandItem>
-                <CommandItem
-                  onSelect={() =>
-                    window.open(
-                      "https://github.com/Termix-SSH/Support/issues/new",
-                      "_blank",
-                    )
-                  }
-                  className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent-brand/10 cursor-pointer"
-                >
-                  <LifeBuoy className="size-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Support</span>
-                </CommandItem>
-              </div>
-            </CommandGroup>
           </CommandList>
 
           <div className="border-t border-border px-4 py-3 bg-muted/30 flex items-center justify-between text-[11px] text-muted-foreground">

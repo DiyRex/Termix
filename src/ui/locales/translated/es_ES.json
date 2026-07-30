@@ -2462,7 +2462,6 @@
     "support": "Soporte",
     "discord": "Discord",
     "docs": "Documentación",
-    "donate": "Donar",
     "serverOverview": "Resumen del servidor",
     "version": "Versión",
     "upToDate": "Actualizado",
@@ -2504,13 +2503,6 @@
     "justNow": "ahora mismo",
     "serviceLinks": "Enlaces de servicio",
     "homepagePreview": "Vista previa de la página de inicio"
-  },
-  "donation": {
-    "title": "¿Disfrutando de Termix?",
-    "body": "Termix es gratuito y de código abierto, creado y mantenido por un equipo de dos personas en nuestro tiempo libre. Si has sustituido una herramienta comercial por la que estarías pagando, una donación ayuda a cubrir los costes de alojamiento y a que el desarrollo continúe. Actualmente, las donaciones son solo en criptomonedas.",
-    "milestones": "Las donaciones también ayudan a financiar el tiempo para investigar y aprender lo necesario para crear funcionalidades como el soporte para SAML y Kubernetes. Ve el progreso en la página de donaciones.",
-    "cta": "Donar",
-    "dismiss": "Quizás más tarde"
   },
   "dashboardTab": {
     "stable": "ESTABLE",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "En algunos navegadores, puede solicitar permiso para copiar y pegar el contenido del portapapeles la primera vez que se utilice."
       },
       "userProfile": {
-        "donateTitle": "Mantener Termix vivo",
-        "donateDescription": "Termix es gratuito, autoalojado y construido por solo unas pocas personas en su tiempo libre. Si te ha ahorrado tiempo o dinero, una donación en criptomonedas ayuda a mantenerlo.",
-        "donateMilestones": "Las donaciones ayudan a financiar el tiempo para investigar y aprender lo necesario para crear soporte para SAML, Kubernetes y Agent. Consulta el progreso y dona.",
-        "donateButton": "Donar criptomonedas",
         "storageModeLocal": "Navegador",
         "storageModeCloud": "Base de datos",
         "storageModeDescription": "El navegador guarda los ajustes solo en este navegador. La base de datos los sincroniza con el servidor y los carga en cualquier dispositivo.",

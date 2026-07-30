@@ -2462,7 +2462,6 @@
     "support": "Ondersteuning",
     "discord": "Disharmonie",
     "docs": "Dokumente",
-    "donate": "Skenk",
     "serverOverview": "Bediener Oorsig",
     "version": "Weergawe",
     "upToDate": "Op datum",
@@ -2504,13 +2503,6 @@
     "justNow": "nou net",
     "serviceLinks": "Diens skakels",
     "homepagePreview": "Tuisbladvoorskou"
-  },
-  "donation": {
-    "title": "Geniet jy Termix?",
-    "body": "Termix is gratis en oopbron, gebou en onderhou deur 'n tweepersoonspan in ons vrye tyd. As dit 'n kommersiële hulpmiddel vervang waarvoor jy andersins sou betaal, help 'n skenking om gasheerkoste te dek en ontwikkeling aan die gang te hou. Van nou af is skenkings slegs kripto.",
-    "milestones": "Donasies help ook om die tyd te befonds om navorsing te doen en te leer wat nodig is om funksies soos SAML en Kubernetes-ondersteuning te bou. Sien die vordering op die skenkingsbladsy.",
-    "cta": "Skenk",
-    "dismiss": "Miskien later"
   },
   "dashboardTab": {
     "stable": "STABIEL",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "Kan in sommige blaaiers met die eerste gebruik vir knipbordtoestemming vra."
       },
       "userProfile": {
-        "donateTitle": "Hou Termix lewendig",
-        "donateDescription": "Termix is gratis, self-gehost en gebou deur slegs 'n paar mense in hul vrye tyd. As dit jou tyd of geld bespaar het, help 'n kripto-skenking om dit aan die gang te hou.",
-        "donateMilestones": "Donasies help om die tyd te befonds om navorsing te doen en te leer wat nodig is om SAML-, Kubernetes- en Agent-ondersteuning te bou. Sien die vordering en skenk.",
-        "donateButton": "Skenk kripto",
         "storageModeLocal": "Blaaier",
         "storageModeCloud": "Databasis",
         "storageModeDescription": "Die blaaier stoor instellings slegs in hierdie blaaier. Die databasis sinkroniseer met die bediener en laai op enige toestel.",

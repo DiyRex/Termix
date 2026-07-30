@@ -2462,7 +2462,6 @@
     "support": "Support",
     "discord": "Discord",
     "docs": "Dokumentation",
-    "donate": "Spenden",
     "serverOverview": "Server-Übersicht",
     "version": "Version",
     "upToDate": "Aktuell",
@@ -2504,13 +2503,6 @@
     "justNow": "gerade eben",
     "serviceLinks": "Service-Links",
     "homepagePreview": "Homepage-Vorschau"
-  },
-  "donation": {
-    "title": "Gefällt Ihnen Termix?",
-    "body": "Termix ist kostenlos und Open Source, entwickelt und gewartet von einem Zwei-Personen-Team in unserer Freizeit. Wenn es ein kommerzielles Tool ersetzt hat, für das Sie sonst bezahlen würden, hilft eine Spende, die Hosting-Kosten zu decken und die Entwicklung fortzusetzen. Derzeit sind Spenden nur in Kryptowährung möglich.",
-    "milestones": "Spenden helfen auch, die Zeit für Forschung und Lernen zu finanzieren, die nötig ist, um Funktionen wie SAML- und Kubernetes-Unterstützung zu entwickeln. Den Fortschritt sehen Sie auf der Spendenseite.",
-    "cta": "Spenden",
-    "dismiss": "Vielleicht später"
   },
   "dashboardTab": {
     "stable": "STABIL",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "Bei einigen Browsern kann es bei der ersten Verwendung zu einer Anfrage nach der Berechtigung zum Ablegen der Zwischenablage kommen."
       },
       "userProfile": {
-        "donateTitle": "Termix unterstützen",
-        "donateDescription": "Termix ist kostenlos, selbst gehostet und wird von nur wenigen Personen in ihrer Freizeit entwickelt. Wenn es Ihnen Zeit oder Geld gespart hat, hilft eine Krypto-Spende, es am Laufen zu halten.",
-        "donateMilestones": "Spenden finanzieren die Zeit, um zu erforschen, was für den Aufbau von SAML-, Kubernetes- und Agent-Unterstützung nötig ist. Verfolgen Sie den Fortschritt und spenden Sie.",
-        "donateButton": "Krypto spenden",
         "storageModeLocal": "Browser",
         "storageModeCloud": "Datenbank",
         "storageModeDescription": "Browser speichert die Einstellungen nur in diesem Browser. Die Datenbank synchronisiert mit dem Server und lädt sie auf jedem Gerät.",

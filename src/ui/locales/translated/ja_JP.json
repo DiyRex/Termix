@@ -2462,7 +2462,6 @@
     "support": "サポート",
     "discord": "Discord",
     "docs": "ドキュメント",
-    "donate": "寄付",
     "serverOverview": "サーバー概要",
     "version": "バージョン",
     "upToDate": "最新",
@@ -2504,13 +2503,6 @@
     "justNow": "たった今",
     "serviceLinks": "サービスリンク",
     "homepagePreview": "ホームページプレビュー"
-  },
-  "donation": {
-    "title": "Termixをお楽しみいただけていますか？",
-    "body": "Termixは無料のオープンソースソフトウェアで、2人のチームが余暇を使って開発・保守しています。もし商用ツールを置き換えてすでにお使いいただいているなら、寄付によりホスティング費用のカバーと開発の継続が可能になります。現在のところ、寄付は暗号通貨のみでの受付となっております。",
-    "milestones": "寄付は、SAMLやKubernetesサポートなどの機能構築に必要な調査や学習の時間を確保するためにも役立ちます。進捗状況は寄付ページでご確認ください。",
-    "cta": "寄付する",
-    "dismiss": "後で"
   },
   "dashboardTab": {
     "stable": "安定版",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "一部のブラウザでは、初回使用時にクリップボードのアクセス許可を求められる場合があります。"
       },
       "userProfile": {
-        "donateTitle": "Termixを支援する",
-        "donateDescription": "Termixは無料で自己ホスト型、少数の開発者が余暇に開発しています。時間や費用の節約になったなら、仮想通貨による寄付が継続の助けになります。",
-        "donateMilestones": "寄付は、SAML、Kubernetes、Agentサポートの構築に必要な調査や学習の時間を賄うのに役立ちます。進捗を見て寄付してください。",
-        "donateButton": "仮想通貨で寄付",
         "storageModeLocal": "ブラウザ",
         "storageModeCloud": "データベース",
         "storageModeDescription": "ブラウザは設定をこのブラウザにのみ保存します。データベースはサーバーと同期し、任意のデバイスで読み込めます。",

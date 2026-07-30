@@ -2462,7 +2462,6 @@
     "support": "Tukea",
     "discord": "Eripura",
     "docs": "Dokumentit",
-    "donate": "Lahjoittaa",
     "serverOverview": "Palvelimen yleiskatsaus",
     "version": "Versio",
     "upToDate": "Ajan tasalla",
@@ -2504,13 +2503,6 @@
     "justNow": "juuri nyt",
     "serviceLinks": "Palvelulinkit",
     "homepagePreview": "Etusivun esikatselu"
-  },
-  "donation": {
-    "title": "Pidätkö Termixistä?",
-    "body": "Termix on ilmainen ja avoimen lähdekoodin ohjelmisto, jota kahden hengen tiimi rakentaa ja ylläpitää vapaa-ajallaan. Jos se korvaa kaupallisen työkalun, josta muuten maksaisit, lahjoitus auttaa kattamaan ylläpitokulut ja pitämään kehityksen käynnissä. Tällä hetkellä lahjoitukset ovat vain kryptovaluuttoja.",
-    "milestones": "Lahjoitukset auttavat myös rahoittamaan aikaa tutkimukseen ja oppimaan, mitä tarvitaan ominaisuuksien, kuten SAML:n ja Kubernetes-tuen, rakentamiseen. Katso edistyminen lahjoitussivulta.",
-    "cta": "Lahjoittaa",
-    "dismiss": "Ehkä myöhemmin"
   },
   "dashboardTab": {
     "stable": "VAKAA",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "Saattaa pyytää leikepöydän käyttöoikeutta ensimmäisellä käyttökerralla joissakin selaimissa."
       },
       "userProfile": {
-        "donateTitle": "Pidä Termix hengissä",
-        "donateDescription": "Termix on ilmainen, itse isännöity ja vain muutaman ihmisen vapaa-ajallaan rakentama palvelu. Jos se on säästänyt aikaasi tai rahaasi, kryptovaluutan lahjoitus auttaa pitämään sen toiminnassa.",
-        "donateMilestones": "Lahjoitukset auttavat rahoittamaan aikaa SAML:n, Kubernetesin ja agenttituen rakentamiseen tarvittavien resurssien tutkimiseen ja oppimiseen. Katso edistymistä ja lahjoita.",
-        "donateButton": "Lahjoita kryptovaluuttaa",
         "storageModeLocal": "Selain",
         "storageModeCloud": "Tietokanta",
         "storageModeDescription": "Selain tallentaa asetukset vain tähän selaimeen. Tietokanta synkronoituu palvelimelle ja latautuu mille tahansa laitteelle.",

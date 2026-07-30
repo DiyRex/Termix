@@ -2462,7 +2462,6 @@
     "support": "Mendukung",
     "discord": "Perselisihan",
     "docs": "Dokumen",
-    "donate": "Menyumbangkan",
     "serverOverview": "Gambaran Umum Server",
     "version": "Versi",
     "upToDate": "Terkini",
@@ -2504,13 +2503,6 @@
     "justNow": "baru saja",
     "serviceLinks": "Tautan Layanan",
     "homepagePreview": "Pratinjau Halaman Utama"
-  },
-  "donation": {
-    "title": "Apakah Anda menikmati Termix?",
-    "body": "Termix adalah perangkat lunak gratis dan sumber terbuka, yang dibangun dan dipelihara oleh tim beranggotakan dua orang di waktu luang kami. Jika Termix menggantikan alat komersial yang biasanya Anda bayar, donasi akan membantu menutupi biaya hosting dan menjaga pengembangan tetap berjalan. Saat ini, donasi hanya dalam bentuk kripto.",
-    "milestones": "Donasi juga membantu mendanai waktu untuk meneliti dan mempelajari apa yang dibutuhkan untuk membangun fitur-fitur seperti dukungan SAML dan Kubernetes. Lihat perkembangannya di halaman donasi.",
-    "cta": "Menyumbangkan",
-    "dismiss": "mungkin nanti"
   },
   "dashboardTab": {
     "stable": "STABIL",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "Pada beberapa browser, mungkin akan meminta izin akses clipboard saat pertama kali digunakan."
       },
       "userProfile": {
-        "donateTitle": "Jaga agar Termix tetap hidup.",
-        "donateDescription": "Termix gratis, dihosting sendiri, dan dibangun hanya oleh beberapa orang di waktu luang mereka. Jika Termix telah menghemat waktu atau uang Anda, donasi kripto akan membantu kelangsungannya.",
-        "donateMilestones": "Donasi membantu mendanai waktu yang dibutuhkan untuk meneliti dan mempelajari apa yang diperlukan untuk membangun dukungan SAML, Kubernetes, dan Agent. Lihat perkembangannya dan berikan donasi.",
-        "donateButton": "Donasikan kripto",
         "storageModeLocal": "Browser",
         "storageModeCloud": "Basis data",
         "storageModeDescription": "Browser hanya menyimpan pengaturan di browser ini saja. Basis data disinkronkan ke server dan dimuat di perangkat apa pun.",

@@ -2462,7 +2462,6 @@
     "support": "Apoiar",
     "discord": "Discórdia",
     "docs": "Documentos",
-    "donate": "Doar",
     "serverOverview": "Visão geral do servidor",
     "version": "Versão",
     "upToDate": "Atualizado",
@@ -2504,13 +2503,6 @@
     "justNow": "agora mesmo",
     "serviceLinks": "Links de serviço",
     "homepagePreview": "Pré-visualização da página inicial"
-  },
-  "donation": {
-    "title": "Gostando do Termix?",
-    "body": "O Termix é gratuito e de código aberto, desenvolvido e mantido por uma equipe de duas pessoas em nosso tempo livre. Se ele substituir uma ferramenta comercial pela qual você pagaria, uma doação ajuda a cobrir os custos de hospedagem e a manter o desenvolvimento em andamento. No momento, as doações são aceitas somente em criptomoedas.",
-    "milestones": "As doações também ajudam a financiar o tempo necessário para pesquisar e aprender o que é preciso para desenvolver recursos como suporte a SAML e Kubernetes. Veja o progresso na página de doações.",
-    "cta": "Doar",
-    "dismiss": "Talvez mais tarde"
   },
   "dashboardTab": {
     "stable": "ESTÁVEL",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "Pode solicitar permissão para acessar a área de transferência no primeiro uso em alguns navegadores."
       },
       "userProfile": {
-        "donateTitle": "Mantenha o Termix vivo",
-        "donateDescription": "O Termix é gratuito, auto-hospedado e desenvolvido por apenas algumas pessoas em seu tempo livre. Se ele lhe economizou tempo ou dinheiro, uma doação em criptomoedas ajuda a mantê-lo funcionando.",
-        "donateMilestones": "As doações ajudam a financiar o tempo necessário para pesquisar e aprender o que é preciso para desenvolver suporte para SAML, Kubernetes e Agentes. Veja o progresso e doe.",
-        "donateButton": "Doe criptomoedas",
         "storageModeLocal": "Navegador",
         "storageModeCloud": "Banco de dados",
         "storageModeDescription": "O navegador armazena as configurações apenas neste navegador. O banco de dados é sincronizado com o servidor e carregado em qualquer dispositivo.",

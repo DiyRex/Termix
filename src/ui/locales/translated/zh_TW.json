@@ -2462,7 +2462,6 @@
     "support": "支援",
     "discord": "Discord",
     "docs": "文件",
-    "donate": "贊助",
     "serverOverview": "伺服器概覽",
     "version": "版本",
     "upToDate": "已是最新",
@@ -2504,13 +2503,6 @@
     "justNow": "剛剛",
     "serviceLinks": "服務連結",
     "homepagePreview": "首頁預覽"
-  },
-  "donation": {
-    "title": "喜歡 Termix 嗎？",
-    "body": "Termix 是免費開源軟體，由兩人團隊利用業餘時間開發和維護。如果它取代了你原本需付費的商業工具，捐款有助於支付託管成本並維持開發。目前僅接受加密貨幣捐款。",
-    "milestones": "捐款也有助於資助研究學習所需的時間，以開發如 SAML 與 Kubernetes 支援等功能。請在捐款頁面查看進度。",
-    "cta": "捐款",
-    "dismiss": "稍後再說"
   },
   "dashboardTab": {
     "stable": "穩定",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "某些瀏覽器在首次使用時可能會提示授予剪貼簿權限。"
       },
       "userProfile": {
-        "donateTitle": "讓 Termix 持續營運",
-        "donateDescription": "Termix 是免費、可自行託管的，且僅由少數人在業餘時間打造。如果它為您節省了時間或金錢，加密貨幣捐贈將有助於使其持續發展。",
-        "donateMilestones": "捐贈有助於資助研究和學習建置 SAML、Kubernetes 和 Agent 支援所需的時間。查看進度並進行捐贈。",
-        "donateButton": "捐贈加密貨幣",
         "storageModeLocal": "瀏覽器",
         "storageModeCloud": "資料庫",
         "storageModeDescription": "瀏覽器僅將設定儲存在此瀏覽器。資料庫會同步至伺服器並在任何裝置上載入。",

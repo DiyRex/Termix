@@ -2462,7 +2462,6 @@
     "support": "支持",
     "discord": "Discord",
     "docs": "文档",
-    "donate": "捐赠",
     "serverOverview": "服务器概览",
     "version": "版本",
     "upToDate": "已是最新",
@@ -2504,13 +2503,6 @@
     "justNow": "刚刚",
     "serviceLinks": "服务链接",
     "homepagePreview": "主页预览"
-  },
-  "donation": {
-    "title": "喜欢 Termix 吗？",
-    "body": "Termix 是一款免费开源工具，由两人团队业余时间构建和维护。如果它替代了您原本需要付费的商业工具，捐赠可以帮助覆盖托管成本并保持开发持续。目前，捐赠仅支持加密货币。",
-    "milestones": "捐赠也有助于投入时间研究和学习构建功能所需的知识，例如 SAML 和 Kubernetes 支持。可在捐赠页面查看进展。",
-    "cta": "捐赠",
-    "dismiss": "稍后再说"
   },
   "dashboardTab": {
     "stable": "稳定",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "某些浏览器在首次使用时可能会提示授予剪贴板权限。"
       },
       "userProfile": {
-        "donateTitle": "让 Termix 持续运转",
-        "donateDescription": "Termix 是免费、自托管的，仅由少数几人用业余时间构建。若它为您节省了时间或金钱，请通过加密货币捐赠助力其持续发展。",
-        "donateMilestones": "捐赠有助于资助研究和学习构建 SAML、Kubernetes 及 Agent 支持所需的时间。查看进展并捐赠。",
-        "donateButton": "捐赠加密货币",
         "storageModeLocal": "浏览器",
         "storageModeCloud": "数据库",
         "storageModeDescription": "浏览器模式仅将设置存储在当前浏览器中。数据库模式则同步至服务器，并在任意设备上加载。",

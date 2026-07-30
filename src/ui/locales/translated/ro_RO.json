@@ -2462,7 +2462,6 @@
     "support": "Sprijin",
     "discord": "Discordie",
     "docs": "Documente",
-    "donate": "Dona",
     "serverOverview": "Prezentare generală a serverului",
     "version": "Versiune",
     "upToDate": "La zi",
@@ -2504,13 +2503,6 @@
     "justNow": "chiar acum",
     "serviceLinks": "Linkuri de servicii",
     "homepagePreview": "Previzualizare pagină principală"
-  },
-  "donation": {
-    "title": "Îți place Termix?",
-    "body": "Termix este gratuit și open source, construit și întreținut de o echipă de două persoane în timpul liber. Dacă înlocuiește un instrument comercial pentru care altfel ați plăti, o donație ajută la acoperirea costurilor de găzduire și menține dezvoltarea în desfășurare. În prezent, donațiile sunt doar criptomonede.",
-    "milestones": "Donațiile ajută, de asemenea, la finanțarea timpului necesar pentru cercetare și învățare a ceea ce este necesar pentru a construi funcții precum suportul SAML și Kubernetes. Vedeți progresul pe pagina de donații.",
-    "cta": "Dona",
-    "dismiss": "Poate mai târziu"
   },
   "dashboardTab": {
     "stable": "STABIL",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "În unele browsere, este posibil să solicite permisiunea pentru clipboard la prima utilizare."
       },
       "userProfile": {
-        "donateTitle": "Menține Termix în viață",
-        "donateDescription": "Termix este gratuit, găzduit în regim self-hosting și construit de doar câțiva oameni în timpul lor liber. Dacă ți-a economisit timp sau bani, o donație în criptomonede ajută la menținerea activității.",
-        "donateMilestones": "Donațiile ajută la finanțarea timpului necesar pentru cercetare și învățare a ceea ce este necesar pentru a dezvolta suport SAML, Kubernetes și pentru agenți. Vedeți progresul și donați.",
-        "donateButton": "Donează criptomonede",
         "storageModeLocal": "Browser",
         "storageModeCloud": "Bază de date",
         "storageModeDescription": "Browserul stochează setările doar în acest browser. Baza de date se sincronizează cu serverul și se încarcă pe orice dispozitiv.",

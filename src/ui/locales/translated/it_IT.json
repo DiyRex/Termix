@@ -2462,7 +2462,6 @@
     "support": "Supporto",
     "discord": "Discord",
     "docs": "Documentazione",
-    "donate": "Dona",
     "serverOverview": "Panoramica server",
     "version": "Versione",
     "upToDate": "Aggiornato",
@@ -2504,13 +2503,6 @@
     "justNow": "adesso",
     "serviceLinks": "Link ai servizi",
     "homepagePreview": "Anteprima home page"
-  },
-  "donation": {
-    "title": "Ti piace Termix?",
-    "body": "Termix è gratuito e open source, sviluppato e mantenuto da un team di due persone nel tempo libero. Se ha sostituito uno strumento commerciale per il quale altrimenti pagheresti, una donazione aiuta a coprire i costi di hosting e a sostenere lo sviluppo. Al momento, le donazioni sono solo in criptovaluta.",
-    "milestones": "Le donazioni aiutano anche a finanziare il tempo necessario per ricercare e apprendere ciò che serve per sviluppare funzionalità come il supporto a SAML e Kubernetes. Vedi i progressi nella pagina delle donazioni.",
-    "cta": "Dona",
-    "dismiss": "Forse più tardi"
   },
   "dashboardTab": {
     "stable": "STABILE",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "In alcuni browser potrebbe essere richiesta l'autorizzazione per l'apposizione degli appunti al primo utilizzo."
       },
       "userProfile": {
-        "donateTitle": "Mantieni Termix vivo",
-        "donateDescription": "Termix è gratuito, self-hosted e sviluppato da poche persone nel tempo libero. Se ti ha fatto risparmiare tempo o denaro, una donazione in criptovalute aiuta a mantenerlo attivo.",
-        "donateMilestones": "Le donazioni finanziano il tempo per ricercare e apprendere ciò che serve per implementare il supporto a SAML, Kubernetes e Agent. Vedi i progressi e dona.",
-        "donateButton": "Dona criptovalute",
         "storageModeLocal": "Browser",
         "storageModeCloud": "Database",
         "storageModeDescription": "Browser salva le impostazioni solo in questo browser. Database le sincronizza con il server e le carica su qualsiasi dispositivo.",

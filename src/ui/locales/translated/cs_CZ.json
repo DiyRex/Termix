@@ -2462,7 +2462,6 @@
     "support": "Podpora",
     "discord": "Svár",
     "docs": "Dokumenty",
-    "donate": "Darovat",
     "serverOverview": "Přehled serveru",
     "version": "Verze",
     "upToDate": "Aktuální",
@@ -2504,13 +2503,6 @@
     "justNow": "právě teď",
     "serviceLinks": "Odkazy na služby",
     "homepagePreview": "Náhled domovské stránky"
-  },
-  "donation": {
-    "title": "Líbí se vám Termix?",
-    "body": "Termix je bezplatný a open source nástroj, který vytváří a spravuje dvoučlenný tým ve svém volném čase. Pokud nahradí komerční nástroj, za který byste jinak platili, dar pomůže pokrýt náklady na hosting a udrží vývoj v chodu. V současné době jsou dary pouze v kryptoměnách.",
-    "milestones": "Dary také pomáhají financovat čas na výzkum a zjištění, co je potřeba k vytvoření funkcí, jako je podpora SAML a Kubernetes. Sledujte průběh na stránce pro darování.",
-    "cta": "Darovat",
-    "dismiss": "Možná později"
   },
   "dashboardTab": {
     "stable": "STABILNÍ",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "V některých prohlížečích se může při prvním použití zobrazit výzva k zadání povolení ke schránce."
       },
       "userProfile": {
-        "donateTitle": "Udrž Termixe naživu",
-        "donateDescription": "Termix je zdarma, hostovaný na vlastních platformách a vyvíjí ho jen několik lidí ve svém volném čase. Pokud vám to ušetřilo čas nebo peníze, dar kryptoměn vám pomůže udržet ho v chodu.",
-        "donateMilestones": "Dary pomáhají financovat čas na výzkum a zjištění, co je potřeba k vytvoření podpory SAML, Kubernetes a Agentů. Sledujte pokrok a darujte.",
-        "donateButton": "Darujte kryptoměny",
         "storageModeLocal": "Prohlížeč",
         "storageModeCloud": "Databáze",
         "storageModeDescription": "Prohlížeč ukládá nastavení pouze v tomto prohlížeči. Databáze se synchronizuje se serverem a načítá se na jakémkoli zařízení.",

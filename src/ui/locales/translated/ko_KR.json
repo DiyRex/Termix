@@ -2462,7 +2462,6 @@
     "support": "지원",
     "discord": "Discord",
     "docs": "문서",
-    "donate": "기부",
     "serverOverview": "서버 개요",
     "version": "버전",
     "upToDate": "최신 상태",
@@ -2504,13 +2503,6 @@
     "justNow": "방금 전",
     "serviceLinks": "서비스 링크",
     "homepagePreview": "홈페이지 미리보기"
-  },
-  "donation": {
-    "title": "Termix가 마음에 드시나요?",
-    "body": "Termix는 자유 오픈 소스 소프트웨어로, 두 명의 팀이 여가 시간에 개발하고 유지 관리하고 있습니다. 기존에 유료로 사용하던 상용 도구를 대체했다면, 기부를 통해 호스팅 비용을 충당하고 개발을 지속할 수 있습니다. 현재 기부는 암호화폐로만 가능합니다.",
-    "milestones": "기부는 SAML 및 Kubernetes 지원과 같은 기능을 구축하는 데 필요한 연구와 학습 시간을 마련하는 데도 도움이 됩니다. 기부 페이지에서 진행 상황을 확인하세요.",
-    "cta": "기부하기",
-    "dismiss": "나중에 할게요"
   },
   "dashboardTab": {
     "stable": "안정",
@@ -3312,10 +3304,6 @@
         "clipboardPermissionNote": "일부 브라우저에서는 처음 사용 시 클립보드 권한을 요청할 수 있습니다."
       },
       "userProfile": {
-        "donateTitle": "Termix 유지 지원",
-        "donateDescription": "Termix는 무료이며 자체 호스팅이 가능하고, 소수의 인원이 여가 시간에 개발한 프로젝트입니다. 시간이나 비용을 절약해 주었다면, 암호화폐 기부로 유지를 도와주세요.",
-        "donateMilestones": "기부금은 SAML, Kubernetes, Agent 지원을 구축하는 데 필요한 연구 및 학습 시간을 충당하는 데 도움이 됩니다. 진행 상황을 확인하고 기부해 주세요.",
-        "donateButton": "암호화폐 기부",
         "storageModeLocal": "브라우저",
         "storageModeCloud": "데이터베이스",
         "storageModeDescription": "브라우저는 이 브라우저에만 설정을 저장합니다. 데이터베이스는 서버에 동기화되어 모든 기기에서 불러올 수 있습니다.",
