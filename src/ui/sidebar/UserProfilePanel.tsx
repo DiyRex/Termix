@@ -104,6 +104,7 @@ const THEMES: { id: ThemeId; preview: string }[] = [
   { id: "tokyo-night", preview: "#1a1b26" },
   { id: "one-dark", preview: "#282c34" },
   { id: "gruvbox", preview: "#282828" },
+  { id: "termius", preview: "#1a2231" },
 ];
 
 const LANGUAGES = [
@@ -468,6 +469,7 @@ export function UserProfilePanel({
     "tokyo-night": t("newUi.sidebar.userProfile.themeTokyoNight"),
     "one-dark": t("newUi.sidebar.userProfile.themeOneDark"),
     gruvbox: t("newUi.sidebar.userProfile.themeGruvbox"),
+    termius: t("newUi.sidebar.userProfile.themeTermius"),
   };
   const [openSections, setOpenSections] = useState<Set<UserProfileSection>>(
     () => new Set(["account"]),

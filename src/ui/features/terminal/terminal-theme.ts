@@ -15,6 +15,8 @@ const TERMIX_DEFAULT_COLORS: Record<
   "tokyo-night": { background: "#1a1b26", foreground: "#a9b1d6" },
   "one-dark": { background: "#282c34", foreground: "#abb2bf" },
   gruvbox: { background: "#282828", foreground: "#ebdbb2" },
+  // Terminal sits on the darkest surface in the ramp, like Termius' console.
+  termius: { background: "#0f1520", foreground: "#eef2f7" },
 };
 
 export function resolveTermixThemeColors(

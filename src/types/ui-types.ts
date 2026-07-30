@@ -384,7 +384,8 @@ export type ThemeId =
   | "solarized"
   | "tokyo-night"
   | "one-dark"
-  | "gruvbox";
+  | "gruvbox"
+  | "termius";
 export type FontSizeId = "xs" | "sm" | "md" | "lg" | "xl";
 
 export type ToolsTab = "ssh-tools" | "snippets" | "history" | "split-screen";

@@ -3496,7 +3496,8 @@
         "themeSolarized": "Solarized",
         "themeTokyoNight": "Tokyo Night",
         "themeOneDark": "One Dark",
-        "themeGruvbox": "Gruvbox"
+        "themeGruvbox": "Gruvbox",
+        "themeTermius": "Termius"
       }
     }
   },

@@ -420,7 +420,7 @@ installElectronWheelZoomGuard();
 prepareClientCacheVersion().finally(() => {
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <ThemeProvider defaultTheme="termius" storageKey="vite-ui-theme">
         <RootApp />
       </ThemeProvider>
     </StrictMode>,

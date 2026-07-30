@@ -24,10 +24,11 @@ const ALL_THEME_CLASSES = [
   "tokyo-night",
   "one-dark",
   "gruvbox",
+  "termius",
 ];
 
 const initialState: ThemeProviderState = {
-  theme: "dark",
+  theme: "termius",
   setTheme: () => null,
   setThemePreview: () => null,
 };
@@ -36,7 +37,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
-  defaultTheme = "dark",
+  defaultTheme = "termius",
   storageKey = "vite-ui-theme",
   ...props
 }: ThemeProviderProps) {
