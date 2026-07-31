@@ -43,16 +43,34 @@ export type HideableRailView =
   | "network_graph"
   | "homepage";
 
-type RailItem =
-  | {
-      kind?: undefined;
-      view: RailView;
-      icon: React.ReactNode;
-      title: string;
-      dot?: boolean;
-    }
-  | { kind: "tab"; tabType: TabType; icon: React.ReactNode; title: string }
-  | { kind: "separator" };
+// Named members plus explicit guards: the view variant carries `kind?: undefined`,
+// which TypeScript will not reliably narrow inside callbacks, so comparing
+// `kind` directly produced `never` in some positions.
+type RailViewItem = {
+  kind?: undefined;
+  view: RailView;
+  icon: React.ReactNode;
+  title: string;
+  dot?: boolean;
+};
+type RailTabItem = {
+  kind: "tab";
+  tabType: TabType;
+  icon: React.ReactNode;
+  title: string;
+};
+type RailSeparator = { kind: "separator" };
+type RailItem = RailViewItem | RailTabItem | RailSeparator;
+
+function isRailTab(item: RailItem): item is RailTabItem {
+  return item.kind === "tab";
+}
+function isRailSeparator(item: RailItem): item is RailSeparator {
+  return item.kind === "separator";
+}
+function isRailViewItem(item: RailItem): item is RailViewItem {
+  return item.kind === undefined;
+}
 
 const PRIMARY_RAIL_TABS = new Set<string>(["network_graph"]);
 
@@ -142,8 +160,8 @@ function buildRailButtons(
 
   // Filter out hidden items, then collapse consecutive/leading/trailing separators
   const filtered = all.filter((item) => {
-    if (item.kind === "separator") return true;
-    if (item.kind === "tab") return !hidden.has(item.tabType);
+    if (isRailSeparator(item)) return true;
+    if (isRailTab(item)) return !hidden.has(item.tabType);
     return !hidden.has(item.view);
   });
 
@@ -167,7 +185,6 @@ const btnStyle = { margin: "0 8px", padding: "0 10px" };
 
 export function AppRail({
   railView,
-  sidebarOpen,
   splitMode,
   username,
   isAdmin,
@@ -176,7 +193,6 @@ export function AppRail({
   onLogout,
 }: {
   railView: RailView;
-  sidebarOpen: boolean;
   splitMode: SplitMode;
   username: string;
   isAdmin: boolean;
@@ -185,16 +201,7 @@ export function AppRail({
   onLogout: () => void;
 }) {
   const { t } = useTranslation();
-  const [hovered, setHovered] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
-  // Expanded by default: the rail is the primary navigation now, so labels
-  // should be visible without hovering. Users can still unpin it.
-  const [pinned, setPinned] = useState(
-    () => localStorage.getItem("pinAppRail") !== "false",
-  );
-  const [expandOnHover, setExpandOnHover] = useState(
-    () => localStorage.getItem("expandAppRailOnHover") !== "false",
-  );
   const [unreadAlerts, setUnreadAlerts] = useState(0);
 
   useEffect(() => {
@@ -248,18 +255,7 @@ export function AppRail({
   });
 
   useEffect(() => {
-    const pinHandler = () =>
-      setPinned(localStorage.getItem("pinAppRail") !== "false");
-    const hoverHandler = () =>
-      setExpandOnHover(
-        localStorage.getItem("expandAppRailOnHover") !== "false",
-      );
-    window.addEventListener("pinAppRailChanged", pinHandler);
-    window.addEventListener("expandAppRailOnHoverChanged", hoverHandler);
-    return () => {
-      window.removeEventListener("pinAppRailChanged", pinHandler);
-      window.removeEventListener("expandAppRailOnHoverChanged", hoverHandler);
-    };
+    return () => {};
   }, []);
 
   useEffect(() => {
@@ -308,7 +304,11 @@ export function AppRail({
     };
   }, []);
 
-  const railExpanded = pinned || (expandOnHover && hovered);
+  // Always expanded. The rail is the app's primary navigation now that
+  // destinations render in the content area, so labels are permanent rather
+  // than something you hover to reveal. `pinned`/`expandOnHover` are still read
+  // so the existing preference UI keeps working, but neither can collapse it.
+  const railExpanded = true;
   const effectiveHiddenTabs = isRemoteSyncConnected
     ? hiddenTabs
     : new Set([...hiddenTabs, "termix-id"]);
@@ -318,29 +318,29 @@ export function AppRail({
   // has far more surfaces than a stock SSH client, and putting all of them in
   // the rail is what made it feel cluttered, so the rest collapse behind
   // "More" and stay one click away.
-  const isPrimary = (item: RailItem) =>
-    (item.kind === undefined && PRIMARY_RAIL_VIEWS.has(item.view)) ||
-    (item.kind === "tab" && PRIMARY_RAIL_TABS.has(item.tabType));
+  const isPrimary = (item: RailItem) => {
+    if (isRailTab(item)) return PRIMARY_RAIL_TABS.has(item.tabType);
+    if (isRailViewItem(item)) return PRIMARY_RAIL_VIEWS.has(item.view);
+    return false;
+  };
   const primaryItems = railButtons.filter(isPrimary);
   const secondaryItems = railButtons.filter(
-    (item) => item.kind !== "separator" && !isPrimary(item),
+    (item) => !isRailSeparator(item) && !isPrimary(item),
   );
   const secondaryActive = secondaryItems.some(
-    (item) => item.kind === undefined && railView === item.view && sidebarOpen,
+    (item) => isRailViewItem(item) && railView === item.view,
   );
 
   return (
     <div
       className="hidden md:flex flex-col items-stretch bg-sidebar border-r border-border/40 shrink-0 overflow-hidden py-2 gap-0.5 transition-[width] duration-200 min-h-0"
       style={{ width: railExpanded ? 208 : 56 }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       <div className="flex flex-col flex-1 gap-1 overflow-y-auto scrollbar-none min-h-0">
         {primaryItems.map((item, i) =>
-          item.kind === "separator" ? (
+          isRailSeparator(item) ? (
             <div key={`sep-${i}`} className="h-1 shrink-0" />
-          ) : item.kind === "tab" ? (
+          ) : isRailTab(item) ? (
             <button
               key={item.tabType}
               onClick={() => onOpenTab?.(item.tabType)}
@@ -427,7 +427,7 @@ export function AppRail({
 
             {moreOpen &&
               secondaryItems.map((item, i) =>
-                item.kind === "tab" ? (
+                isRailTab(item) ? (
                   <button
                     key={item.tabType}
                     onClick={() => onOpenTab?.(item.tabType)}
@@ -448,7 +448,7 @@ export function AppRail({
                       {item.title}
                     </span>
                   </button>
-                ) : item.kind === undefined ? (
+                ) : isRailViewItem(item) ? (
                   <button
                     key={item.view}
                     onClick={() => onRailClick(item.view)}

@@ -1870,7 +1870,6 @@ export function AppShell({
           {/* Skinny icon rail — desktop only, hidden on mobile */}
           <AppRail
             railView={railView}
-            sidebarOpen={sidebarOpen}
             splitMode={splitMode}
             username={username}
             isAdmin={showMultiUserUI}
