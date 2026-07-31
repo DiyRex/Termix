@@ -72,7 +72,7 @@ function isRailViewItem(item: RailItem): item is RailViewItem {
   return item.kind === undefined;
 }
 
-const PRIMARY_RAIL_TABS = new Set<string>(["network_graph"]);
+const PRIMARY_RAIL_TABS = new Set<string>([]);
 
 const PRIMARY_RAIL_VIEWS = new Set<string>([
   "dashboard",

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Server,
@@ -15,6 +15,8 @@ import { Button } from "@/components/button.tsx";
 import { Input } from "@/components/input.tsx";
 import type { Host, HostFolder, TabType } from "@/types/ui-types";
 import { resolveHostTabType } from "@/lib/host-connection-tabs";
+import { getSSHHosts } from "@/api/ssh-host-management-api";
+import { sshLogger } from "@/lib/frontend-logger";
 
 /**
  * Hosts browsed as a card grid in the main content area, with a details
@@ -124,10 +126,73 @@ export function HostsTab({
   const [inspectorOpen, setInspectorOpen] = useState(true);
 
   // Memoised so the fallback array is not a fresh reference on every render,
-  // which would defeat the two useMemos below.
+  // which would defeat the useMemos below.
   const children = useMemo(() => hostTree?.children ?? [], [hostTree]);
-  const groups = useMemo(() => collectGroups(children), [children]);
-  const hosts = useMemo(() => flattenHosts(children), [children]);
+  const treeHosts = useMemo(() => flattenHosts(children), [children]);
+
+  // The grid is the primary hosts view, so it loads its own data instead of
+  // depending on a tree assembled elsewhere that may not have been refreshed
+  // since the session started. The tree is still used when it has content, so
+  // there is no duplicate request on the common path.
+  const [fetchedHosts, setFetchedHosts] = useState<Host[] | null>(null);
+  const load = useCallback(async () => {
+    try {
+      const raw = await getSSHHosts();
+      setFetchedHosts(
+        raw.map((h) => ({
+          id: String(h.id),
+          name: h.name ?? "",
+          username: h.username ?? "",
+          ip: h.ip ?? "",
+          port: h.port ?? 22,
+          folder: h.folder ?? "",
+          tags: h.tags ?? [],
+          authType: (h.authType ?? "none") as Host["authType"],
+          online: false,
+          cpu: null,
+          ram: null,
+          lastAccess: "",
+        })) as Host[],
+      );
+    } catch (err) {
+      sshLogger.error("Failed to load hosts for the host grid", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (treeHosts.length === 0) void load();
+  }, [treeHosts.length, load]);
+
+  useEffect(() => {
+    const refresh = () => void load();
+    window.addEventListener("termix:hosts-changed", refresh);
+    window.addEventListener("ssh-hosts:changed", refresh);
+    window.addEventListener("hosts:refresh", refresh);
+    return () => {
+      window.removeEventListener("termix:hosts-changed", refresh);
+      window.removeEventListener("ssh-hosts:changed", refresh);
+      window.removeEventListener("hosts:refresh", refresh);
+    };
+  }, [load]);
+
+  // Memoised: a bare conditional would hand a new array to the memos below on
+  // every render.
+  const hosts = useMemo(
+    () => (treeHosts.length > 0 ? treeHosts : (fetchedHosts ?? [])),
+    [treeHosts, fetchedHosts],
+  );
+
+  // Groups come from the hosts themselves so they stay correct regardless of
+  // which source supplied them.
+  const groups = useMemo(() => {
+    if (treeHosts.length > 0) return collectGroups(children);
+    const counts = new Map<string, number>();
+    for (const h of hosts) {
+      if (!h.folder) continue;
+      counts.set(h.folder, (counts.get(h.folder) ?? 0) + 1);
+    }
+    return [...counts.entries()].map(([name, count]) => ({ name, count }));
+  }, [treeHosts.length, children, hosts]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
