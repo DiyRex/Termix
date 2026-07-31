@@ -2,10 +2,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { Separator } from "@/components/separator";
-import { Button } from "@/components/button";
-import { Sheet, SheetContent } from "@/components/sheet";
-import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 import {
   useState,
   useRef,
@@ -275,19 +271,10 @@ export function AppShell({
   const [remoteSyncInitialServerUrl, setRemoteSyncInitialServerUrl] = useState<
     string | undefined
   >(undefined);
-  const [sidebarWidth, setSidebarWidth] = useState(() => {
-    const saved = localStorage.getItem("termix_sidebarWidth");
-    return saved ? parseInt(saved, 10) : 291;
-  });
-  const [sidebarDragging, setSidebarDragging] = useState(false);
   const [sidebarEditing, setSidebarEditing] = useState(false);
   const [isAppFullscreen, setIsAppFullscreen] = useState(
     () => !!document.fullscreenElement,
   );
-
-  useEffect(() => {
-    localStorage.setItem("termix_sidebarWidth", String(sidebarWidth));
-  }, [sidebarWidth]);
 
   useEffect(() => {
     localStorage.setItem("termix_splitMode", splitMode);
@@ -446,23 +433,6 @@ export function AppShell({
     },
     [],
   );
-
-  const sidebarTitle: Record<RailView, string> = {
-    hosts: "Hosts",
-    credentials: "Credentials",
-    "termix-id": t("nav.termixId"),
-    "quick-connect": "Quick Connect",
-    serial: t("nav.serial"),
-    "ssh-tools": "SSH Tools",
-    snippets: "Snippets",
-    history: "History",
-    "session-logs": t("nav.sessionLogs"),
-    "split-screen": "Split Screen",
-    connections: t("nav.connections"),
-    "user-profile": "User Profile",
-    "admin-settings": "Admin Settings",
-    alerts: t("nav.alerts"),
-  };
 
   // Double-shift opens command palette
   useEffect(() => {
@@ -1570,28 +1540,6 @@ export function AppShell({
     }, 0);
   }
 
-  const onSidebarMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      setSidebarDragging(true);
-      const startX = e.clientX;
-      const startW = sidebarWidth;
-      function onMove(ev: MouseEvent) {
-        setSidebarWidth(
-          Math.max(160, Math.min(480, startW + ev.clientX - startX)),
-        );
-      }
-      function onUp() {
-        setSidebarDragging(false);
-        window.removeEventListener("mousemove", onMove);
-        window.removeEventListener("mouseup", onUp);
-      }
-      window.addEventListener("mousemove", onMove);
-      window.addEventListener("mouseup", onUp);
-    },
-    [sidebarWidth],
-  );
-
   // Resize all terminals in panes + active terminal when split mode or sidebar changes
   const resizeAllTerminals = useCallback(() => {
     const id = requestAnimationFrame(() => {
@@ -1608,7 +1556,7 @@ export function AppShell({
   useEffect(() => {
     const id = resizeAllTerminals();
     return () => cancelAnimationFrame(id);
-  }, [splitMode, sidebarWidth, sidebarOpen]);
+  }, [splitMode, sidebarOpen]);
 
   const isSplit = splitMode !== "none";
 
@@ -1895,40 +1843,6 @@ export function AppShell({
     </Suspense>
   );
 
-  const sidebarPanelContent = renderRailPanels(railView);
-
-  // Sidebar header — shared
-  const sidebarHeader = (
-    <div className="flex flex-row items-center border-b border-border h-12.5 shrink-0">
-      <span className="flex-1 text-base font-bold tracking-tight text-foreground px-3">
-        {sidebarTitle[railView]}
-      </span>
-      {!isMobile && (
-        <>
-          <Separator orientation="vertical" />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-full w-12.5 border-y-0 border-border rounded-md text-muted-foreground hover:text-foreground"
-            title="Reset width"
-            onClick={() => setSidebarWidth(291)}
-          >
-            <Maximize2 className="size-3.5" />
-          </Button>
-        </>
-      )}
-      <Separator orientation="vertical" />
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-full w-12.5 rounded-md text-muted-foreground hover:text-foreground"
-        onClick={() => setSidebarOpen(false)}
-      >
-        <ChevronLeft className="size-4" />
-      </Button>
-    </div>
-  );
-
   return (
     <ServerStatusProvider isAuthenticated={!!username}>
       <div
@@ -1965,55 +1879,12 @@ export function AppShell({
             onLogout={onLogout}
           />
 
-          {/* Desktop: inline resizable sidebar */}
-          {!isMobile && (
-            <div
-              className={`relative flex flex-col min-h-0 bg-sidebar shrink-0 overflow-hidden ${sidebarOpen ? `border-r transition-colors ${sidebarDragging ? "border-accent-brand/60" : "border-border"}` : ""}`}
-              style={{
-                width: sidebarOpen ? (sidebarEditing ? 560 : sidebarWidth) : 0,
-                transition: sidebarDragging ? "none" : "width 0.2s",
-              }}
-            >
-              {sidebarHeader}
-              {sidebarPanelContent}
-
-              {sidebarOpen && !sidebarEditing && (
-                <div
-                  onMouseDown={onSidebarMouseDown}
-                  className={`absolute right-0 top-0 bottom-0 w-1 cursor-col-resize z-30 transition-colors ${sidebarDragging ? "bg-accent-brand/60" : "hover:bg-accent-brand/40"}`}
-                />
-              )}
-            </div>
-          )}
-
-          {/* Mobile: sidebar as overlay sheet */}
-          {isMobile && (
-            <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-              <SheetContent
-                side="left"
-                showCloseButton={false}
-                className="p-0 flex flex-col min-h-0 w-[min(85vw,360px)] max-w-full bg-sidebar border-r border-border gap-0"
-                style={{ height: "100dvh" }}
-              >
-                {sidebarHeader}
-                {sidebarPanelContent}
-              </SheetContent>
-            </Sheet>
-          )}
+          {/* The middle column is gone: every destination renders in the
+              content area, and the host/credential editors render there too. */}
 
           {/* Main content area */}
-          <div
-            className={`relative flex flex-col flex-1 min-w-0 overflow-hidden transition-all duration-200 ${!isMobile && !sidebarOpen ? "pl-6" : ""}`}
-          >
-            {!isMobile && !sidebarOpen && (
-              <button
-                onClick={() => setSidebarOpen(true)}
-                title="Open Sidebar"
-                className="absolute left-0 top-0 bottom-0 z-20 flex items-center justify-center w-6 bg-sidebar border-r border-border text-muted-foreground hover:text-accent-brand hover:bg-accent-brand/5 transition-colors"
-              >
-                <ChevronRight className="size-3.5" />
-              </button>
-            )}
+          {/* No reopen affordance: there is no third column to reopen. */}
+          <div className="relative flex flex-col flex-1 min-w-0 overflow-hidden">
             <div className="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden">
               <TabBar
                 tabs={tabs}
@@ -2046,17 +1917,46 @@ export function AppShell({
                     down a live terminal. */}
                 {railViewActive && (
                   <div className="absolute inset-0 z-10 flex flex-col bg-background">
-                    {railView === "hosts" ? (
-                      <Suspense fallback={<SidebarPanelFallback />}>
-                        <HostsTab
-                          hostTree={realHostTree ?? undefined}
-                          onOpenTab={(host, type) => {
-                            setRailViewActive(false);
-                            openTab(host, type);
-                          }}
-                          onEditHost={editHostInManager}
-                        />
-                      </Suspense>
+                    {railView === "hosts" || railView === "credentials" ? (
+                      // Both of these have a browse view and an editor. The
+                      // panel stays mounted (hidden) so the events that open
+                      // its editor always land, and the grid sits on top until
+                      // the panel reports that it is editing.
+                      <>
+                        <div
+                          className={
+                            sidebarEditing
+                              ? "flex flex-1 flex-col min-h-0"
+                              : "hidden"
+                          }
+                        >
+                          {renderRailPanels(railView)}
+                        </div>
+                        {!sidebarEditing && (
+                          <Suspense fallback={<SidebarPanelFallback />}>
+                            {railView === "hosts" ? (
+                              <HostsTab
+                                hostTree={realHostTree ?? undefined}
+                                onOpenTab={(host, type) => {
+                                  setRailViewActive(false);
+                                  openTab(host, type);
+                                }}
+                                onEditHost={editHostInManager}
+                              />
+                            ) : (
+                              <CredentialsTab
+                                onAddCredential={() =>
+                                  window.dispatchEvent(
+                                    new CustomEvent(
+                                      "host-manager:add-credential",
+                                    ),
+                                  )
+                                }
+                              />
+                            )}
+                          </Suspense>
+                        )}
+                      </>
                     ) : railView === "settings" ? (
                       <Suspense fallback={<SidebarPanelFallback />}>
                         <SettingsTab
@@ -2086,25 +1986,6 @@ export function AppShell({
                                 ]
                               : []),
                           ]}
-                        />
-                      </Suspense>
-                    ) : railView === "credentials" ? (
-                      <Suspense fallback={<SidebarPanelFallback />}>
-                        <CredentialsTab
-                          onAddCredential={() => {
-                            setRailViewActive(false);
-                            setRailView("credentials");
-                            setSidebarOpen(true);
-                            setTimeout(
-                              () =>
-                                window.dispatchEvent(
-                                  new CustomEvent(
-                                    "host-manager:add-credential",
-                                  ),
-                                ),
-                              0,
-                            );
-                          }}
                         />
                       </Suspense>
                     ) : railView === "dashboard" ? (
