@@ -670,7 +670,7 @@ function KeyList({
   }
 
   return (
-    <div className="flex flex-col border border-border bg-card">
+    <div className="flex flex-col rounded-lg border border-border bg-card">
       <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border shrink-0">
         <span className="text-muted-foreground">
           <KeyRound className="size-3.5" />

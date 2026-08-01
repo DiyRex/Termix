@@ -25,7 +25,10 @@ import type { SSHHost } from "@/types";
 import { isElectron } from "@/main-axios.ts";
 import { SimpleLoader } from "@/lib/SimpleLoader.tsx";
 import { useTranslation } from "react-i18next";
-import { resolveTermixThemeColors } from "@/features/terminal/terminal-theme";
+import {
+  getDefaultTerminalTheme,
+  resolveTermixThemeColors,
+} from "@/features/terminal/terminal-theme";
 import { DEFAULT_TERMINAL_CONFIG, TERMINAL_FONTS } from "@/lib/terminal-themes";
 import { ensureTerminalFontsLoaded } from "@/features/terminal/terminal-global-styles";
 import { useTheme } from "@/components/theme-provider";
@@ -53,9 +56,10 @@ export function ConsoleTerminal({
   );
 
   const themeColors = React.useMemo(() => {
-    const activeTheme = terminalConfig.theme;
+    const activeTheme =
+      hostConfig.terminalConfig?.theme || getDefaultTerminalTheme();
     return resolveTermixThemeColors(activeTheme, appTheme);
-  }, [terminalConfig.theme, appTheme]);
+  }, [hostConfig.terminalConfig?.theme, appTheme]);
 
   const [isConnected, setIsConnected] = React.useState(false);
   const [isConnecting, setIsConnecting] = React.useState(false);
@@ -555,7 +559,9 @@ export function ConsoleTerminal({
         <CardContent className="p-0 h-full relative">
           <div
             ref={xtermRef}
-            className="h-full w-full"
+            // 3px inset, matching the other consoles. The Card behind already
+            // paints the terminal background.
+            className="h-full w-full p-[3px]"
             style={{ display: isConnected ? "block" : "none" }}
           />
 

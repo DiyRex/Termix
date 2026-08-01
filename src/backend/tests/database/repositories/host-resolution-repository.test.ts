@@ -83,6 +83,7 @@ describe("HostResolutionRepository", () => {
         terminal_config TEXT,
         quick_actions TEXT,
         notes TEXT,
+        os_icon TEXT,
         enable_ssh INTEGER NOT NULL DEFAULT 1,
         enable_rdp INTEGER NOT NULL DEFAULT 0,
         enable_vnc INTEGER NOT NULL DEFAULT 0,

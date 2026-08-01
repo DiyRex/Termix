@@ -35,3 +35,6 @@ electron/build-info.cjs
 /old_db/
 /scripts/fix-bugs.mjs
 /scripts/fix-features.mjs
+
+# Working screenshots dropped in for review — not part of the repo
+/docs/screenshots/

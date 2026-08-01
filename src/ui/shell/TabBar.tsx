@@ -1,32 +1,44 @@
 import { useRef, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/button";
-import { Separator } from "@/components/separator";
+
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/dropdown-menu";
-import {
-  ChevronDown,
-  ChevronUp,
   RefreshCw,
   X,
   LayoutPanelLeft,
   Plus,
   Minus,
   Pencil,
-  Maximize2,
-  Minimize2,
   FolderOpen,
   Share2,
+  ChevronDown,
+  Bell,
 } from "lucide-react";
 import { tabIcon } from "@/shell/tabUtils";
-import { isElectron } from "@/lib/electron";
 import type { Tab, TabType, SplitMode } from "@/types/ui-types";
 import { SPLIT_MODES, PANE_COUNTS } from "@/lib/theme";
+import { titleBarInsetLeft, usesInlineTitleBar } from "@/lib/electron";
 
-const CONNECTION_TAB_TYPES: TabType[] = ["terminal", "rdp", "vnc", "telnet"];
+// The strip doubles as the window's title bar when there is no native one, so
+// its empty space drags the window while every control opts back out.
+const DRAG = { WebkitAppRegion: "drag" } as React.CSSProperties;
+const NO_DRAG = { WebkitAppRegion: "no-drag" } as React.CSSProperties;
+
+const CONNECTION_TAB_TYPES: TabType[] = [
+  "terminal",
+  "local-terminal",
+  "rdp",
+  "vnc",
+  "telnet",
+];
+
+/**
+ * The vault tab is chrome, not a session: it is pinned to the first slot, can't
+ * be closed, renamed, dragged or split, and it is what hands the content area
+ * back to the navigation rail.
+ */
+function isPinned(tab: Tab) {
+  return tab.type === "vaults" || tab.type === "sftp";
+}
 
 export function TabBar({
   tabs,
@@ -44,8 +56,10 @@ export function TabBar({
   onRenameTab,
   onOpenFileManager,
   onOpenShare,
-  isAppFullscreen,
-  onToggleAppFullscreen,
+  onOpenVaultMenu,
+  onOpenAlerts,
+  unreadAlerts = 0,
+  onNewTab,
 }: {
   tabs: Tab[];
   activeTabId: string;
@@ -62,11 +76,16 @@ export function TabBar({
   onRenameTab?: (tabId: string, newLabel: string) => void;
   onOpenFileManager?: (tabId: string) => void;
   onOpenShare?: (tabId: string) => void;
-  isAppFullscreen: boolean;
-  onToggleAppFullscreen: () => void;
+  onOpenVaultMenu?: (anchor: { x: number; y: number }) => void;
+  onOpenAlerts?: () => void;
+  unreadAlerts?: number;
+  /** The new-tab button. Opens the vault's host list, as in Termius. */
+  onNewTab?: () => void;
 }) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(true);
+  // The bar is always shown; its collapse toggle and window controls were
+  // removed in favour of a plain tab strip.
+  const open = true;
   const [dragTabId, setDragTabId] = useState<string | null>(null);
   const [dragTargetIndex, setDragTargetIndex] = useState<number | null>(null);
   const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
@@ -97,6 +116,8 @@ export function TabBar({
 
   const isSplit = splitMode !== "none";
   const paneCount = PANE_COUNTS[splitMode];
+  const inlineTitleBar = usesInlineTitleBar();
+  const insetLeft = titleBarInsetLeft();
 
   useEffect(() => {
     const el = tabBarRef.current;
@@ -140,7 +161,7 @@ export function TabBar({
           newTarget = Math.max(newTarget, idx);
       });
 
-      if (tabs[0].type === "dashboard") newTarget = Math.max(1, newTarget);
+      if (tabs[0].type === "vaults") newTarget = Math.max(1, newTarget);
       dragTargetRef.current = newTarget;
       setDragTargetIndex(newTarget);
     }
@@ -203,11 +224,18 @@ export function TabBar({
   return (
     <div className="flex flex-col shrink-0 min-w-0">
       <div
-        className={`flex items-end bg-sidebar min-w-0 transition-all duration-200 ${open ? "h-12.5 border-b border-border" : "h-0 overflow-hidden"}`}
+        className={`flex items-center bg-sidebar min-w-0 transition-all duration-200 ${open ? "h-12.5" : "h-0 overflow-hidden"}`}
+        style={inlineTitleBar ? DRAG : undefined}
       >
+        {/* Keeps the first tab clear of the macOS traffic lights. A sibling box
+            rather than padding on the scroller, so it cannot scroll away with
+            the tabs. */}
+        {insetLeft > 0 && (
+          <div className="h-full shrink-0" style={{ width: insetLeft }} />
+        )}
         <div
           ref={tabBarRef}
-          className="flex h-full flex-1 min-w-0 overflow-x-auto scrollbar-none pl-px"
+          className="flex h-full flex-1 min-w-0 items-center gap-1.5 overflow-x-auto scrollbar-none px-2"
         >
           {tabs.map((tab, index) => {
             const active = tab.id === activeTabId;
@@ -233,6 +261,7 @@ export function TabBar({
 
             const showFocusIndicator = isFocusedPane && isSplit;
             const showInPaneIndicator = isInPane && isSplit && !isFocusedPane;
+            const pinned = isPinned(tab);
 
             return (
               <div
@@ -241,9 +270,9 @@ export function TabBar({
                   if (el) tabEls.current.set(tab.id, el);
                   else tabEls.current.delete(tab.id);
                 }}
-                draggable={isSplit && tab.type !== "dashboard"}
+                draggable={isSplit && !pinned}
                 onDragStart={(e) => {
-                  if (!isSplit || tab.type === "dashboard") return;
+                  if (!isSplit || pinned) return;
                   e.dataTransfer.setData("text/plain", tab.id);
                   e.dataTransfer.effectAllowed = "move";
                 }}
@@ -251,19 +280,19 @@ export function TabBar({
                   !dragTabId && !didDrag.current && onSetActiveTab(tab.id)
                 }
                 onMouseDown={(e) => {
-                  if (e.button === 1 && tab.type !== "dashboard") {
+                  if (e.button === 1 && !pinned) {
                     e.preventDefault();
                     onCloseTab(tab.id);
                   }
                 }}
                 onContextMenu={(e) => {
-                  if (tab.type === "dashboard") return;
+                  if (pinned) return;
                   e.preventDefault();
                   setContextTabId(tab.id);
                   setContextPos({ x: e.clientX, y: e.clientY });
                 }}
                 onPointerDown={(e) => {
-                  if (e.button !== 0 || tab.type === "dashboard") return;
+                  if (e.button !== 0 || pinned) return;
                   e.preventDefault();
                   const el = tabEls.current.get(tab.id);
                   if (!el || !tabBarRef.current) return;
@@ -295,32 +324,63 @@ export function TabBar({
                   transition:
                     dragTabId && !isDragging ? "transform 200ms ease" : "none",
                   opacity: isDragging ? 0 : 1,
-                  cursor:
-                    tab.type === "dashboard"
-                      ? "pointer"
-                      : isDragging
-                        ? "grabbing"
-                        : "grab",
+                  cursor: pinned ? "pointer" : isDragging ? "grabbing" : "grab",
                   userSelect: "none",
+                  ...(inlineTitleBar ? NO_DRAG : null),
                 }}
-                className={`group/tab relative flex items-center gap-2 shrink-0 transition-colors border-r border-border text-sm
-                ${index === 0 && tab.type !== "dashboard" ? "border-l border-border" : ""}
-                ${
-                  tab.type === "dashboard"
-                    ? `px-2.5 md:px-3.5 ${active ? "border-b-2 border-b-accent-brand bg-surface text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-surface"}`
-                    : `px-2.5 md:px-4 font-medium ${active ? "border-b-2 border-b-accent-brand bg-surface text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-surface"}`
+                className={`group/tab relative flex h-9 items-center gap-2 shrink-0 rounded-lg px-3.5 text-sm transition-colors ${
+                  active
+                    ? "bg-accent-brand/15 text-accent-brand ring-1 ring-accent-brand/70"
+                    : "bg-foreground/5 text-muted-foreground hover:bg-foreground/10 hover:text-foreground"
                 }`}
               >
-                {/* Focused-pane indicator: brand accent bottom border overlay */}
+                {/* Focused-pane indicator: brand accent underline overlay */}
                 {showFocusIndicator && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent-brand/70 z-10" />
+                  <span className="absolute bottom-0.5 left-3 right-3 h-0.5 rounded-full bg-accent-brand/70 z-10" />
                 )}
                 {/* In-pane (not focused) indicator: subtle dot */}
                 {showInPaneIndicator && (
-                  <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 size-1 rounded-full bg-muted-foreground/40 z-10" />
+                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 size-1 rounded-full bg-muted-foreground/40 z-10" />
                 )}
-                {tabIcon(tab.type)}
-                {tab.type !== "dashboard" && renamingTabId === tab.id ? (
+                {/* Leading slot. The tab's icon becomes its close button on
+                    hover, and stays a close button while the tab is active —
+                    which is what keeps the pill from changing width. */}
+                <span className="relative flex size-3.5 shrink-0 items-center justify-center">
+                  {!pinned && (
+                    <button
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCloseTab(tab.id);
+                      }}
+                      title={t("nav.close")}
+                      className={`absolute inset-0 flex items-center justify-center rounded-sm transition-opacity ${
+                        active
+                          ? "opacity-100"
+                          : "opacity-0 group-hover/tab:opacity-100"
+                      }`}
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  )}
+                  {/* Decorative only, and it overlaps the close button that is
+                      absolutely positioned in this same slot. An opacity-0
+                      element still takes clicks, so without pointer-events-none
+                      the faded-out icon swallows every press of the X. */}
+                  <span
+                    aria-hidden
+                    className={`pointer-events-none ${
+                      pinned
+                        ? ""
+                        : active
+                          ? "opacity-0"
+                          : "group-hover/tab:opacity-0"
+                    }`}
+                  >
+                    {tabIcon(tab.type)}
+                  </span>
+                </span>
+                {!pinned && renamingTabId === tab.id ? (
                   <input
                     ref={renameInputRef}
                     value={renameValue}
@@ -336,13 +396,35 @@ export function TabBar({
                     style={{ fontWeight: "inherit" }}
                   />
                 ) : (
-                  tab.type !== "dashboard" && tab.label
+                  // Capped so one long host name can't stretch the pill wide
+                  // enough to push the new-tab button off the strip.
+                  <span className="max-w-50 truncate">{tab.label}</span>
                 )}
-                {tab.type !== "dashboard" && renamingTabId !== tab.id && (
-                  <div
-                    className={`flex items-center gap-0.5 ml-1 ${active ? "opacity-100" : "opacity-0 group-hover/tab:opacity-100"}`}
+                {/* The vault tab's disclosure chevron. It only appears once the
+                    tab is active, matching where the vault switcher lives. */}
+                {tab.type === "vaults" && active && onOpenVaultMenu && (
+                  <button
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const rect = (
+                        e.currentTarget as HTMLElement
+                      ).getBoundingClientRect();
+                      onOpenVaultMenu({ x: rect.left, y: rect.bottom });
+                    }}
+                    title={t("nav.switchVault")}
+                    className="-mr-1 flex size-4 items-center justify-center rounded-sm transition-colors hover:bg-white/10"
                   >
-                    {CONNECTION_TAB_TYPES.includes(tab.type) && (
+                    <ChevronDown className="size-3.5" />
+                  </button>
+                )}
+                {/* Refresh and share stay on the right, revealed on hover, so
+                    the pill reads as a plain label at rest. Close lives in the
+                    leading slot above. */}
+                {!pinned &&
+                  renamingTabId !== tab.id &&
+                  CONNECTION_TAB_TYPES.includes(tab.type) && (
+                    <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover/tab:opacity-100">
                       <button
                         onPointerDown={(e) => e.stopPropagation()}
                         onClick={(e) => {
@@ -350,36 +432,25 @@ export function TabBar({
                           onRefreshTab(tab.id);
                         }}
                         title={t("nav.refreshTab")}
-                        className="flex items-center justify-center size-5 md:size-4 rounded-sm transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
+                        className="flex size-4 items-center justify-center rounded-sm transition-colors hover:bg-white/10"
                       >
                         <RefreshCw className="size-3" />
                       </button>
-                    )}
-                    {CONNECTION_TAB_TYPES.includes(tab.type) && onOpenShare && (
-                      <button
-                        onPointerDown={(e) => e.stopPropagation()}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onOpenShare(tab.id);
-                        }}
-                        title={t("sessionSharing.shareButton")}
-                        className="flex items-center justify-center size-5 md:size-4 rounded-sm transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
-                      >
-                        <Share2 className="size-3" />
-                      </button>
-                    )}
-                    <button
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onCloseTab(tab.id);
-                      }}
-                      className="flex items-center justify-center size-5 md:size-4 rounded-sm transition-colors text-muted-foreground hover:text-foreground hover:bg-muted"
-                    >
-                      <X className="size-3" />
-                    </button>
-                  </div>
-                )}
+                      {onOpenShare && (
+                        <button
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenShare(tab.id);
+                          }}
+                          title={t("sessionSharing.shareButton")}
+                          className="flex size-4 items-center justify-center rounded-sm transition-colors hover:bg-white/10"
+                        >
+                          <Share2 className="size-3" />
+                        </button>
+                      )}
+                    </div>
+                  )}
               </div>
             );
           })}
@@ -401,115 +472,50 @@ export function TabBar({
                     zIndex: 9999,
                     opacity: 0.85,
                   }}
-                  className={`flex items-center gap-2 shrink-0 border border-border text-sm shadow-lg
-                ${
-                  tab.type === "dashboard"
-                    ? `px-3.5 ${active ? "border-b-2 border-b-accent-brand bg-surface text-foreground" : "bg-sidebar text-muted-foreground"}`
-                    : `px-4 font-medium ${active ? "border-b-2 border-b-accent-brand bg-surface text-foreground" : "bg-sidebar text-muted-foreground"}`
-                }`}
+                  className={`flex h-9 items-center gap-2 shrink-0 rounded-lg px-3.5 text-sm shadow-lg ${
+                    active
+                      ? "bg-accent-brand/15 text-accent-brand ring-1 ring-accent-brand/70"
+                      : "bg-foreground/5 text-muted-foreground"
+                  }`}
                 >
                   {tabIcon(tab.type)}
-                  {tab.type !== "dashboard" && tab.label}
+                  {tab.label}
                 </div>
               );
             })()}
-        </div>
 
-        <div
-          className={`flex items-center h-full shrink-0 ${open ? "" : "invisible"}`}
-        >
-          <Separator orientation="vertical" />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-full w-12.5 border-y-0 border-r-0 border-border rounded-md text-muted-foreground hover:text-foreground"
-              >
-                <ChevronDown className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              sideOffset={1}
-              className="w-56 border-t-0 [clip-path:inset(0px_-4px_-4px_-4px)] p-0"
+          {/* New-tab affordance. Opens a shell on this machine, which is what
+              the equivalent control does in every other terminal app. */}
+          {onNewTab && (
+            <button
+              onClick={() => onNewTab()}
+              title={t("nav.newTab")}
+              style={inlineTitleBar ? NO_DRAG : undefined}
+              className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
             >
-              {tabs.map((tab) => (
-                <div
-                  key={tab.id}
-                  onClick={() => onSetActiveTab(tab.id)}
-                  className={`flex items-center justify-between px-2 py-2 text-xs cursor-default hover:bg-accent hover:text-accent-foreground ${tab.id === activeTabId ? "text-foreground" : "text-muted-foreground"}`}
-                >
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    {tabIcon(tab.type)}
-                    <span className="truncate">
-                      {tab.type === "dashboard"
-                        ? t("nav.dashboard")
-                        : tab.label}
-                    </span>
-                  </div>
-                  {tab.type !== "dashboard" && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onCloseTab(tab.id);
-                      }}
-                      className="shrink-0 ml-2 text-muted-foreground hover:text-foreground"
-                    >
-                      <X className="size-3" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          {!isElectron() && (
-            <>
-              <Separator orientation="vertical" />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-full w-12.5 rounded-md border-y-0 border-border text-muted-foreground hover:text-foreground"
-                title={
-                  isAppFullscreen
-                    ? "Exit fullscreen (Ctrl+Shift+F)"
-                    : "Enter fullscreen (Ctrl+Shift+F)"
-                }
-                aria-label={
-                  isAppFullscreen ? "Exit fullscreen" : "Enter fullscreen"
-                }
-                onClick={onToggleAppFullscreen}
-              >
-                {isAppFullscreen ? (
-                  <Minimize2 className="size-4" />
-                ) : (
-                  <Maximize2 className="size-4" />
-                )}
-              </Button>
-            </>
+              <Plus className="size-4.5" />
+            </button>
           )}
-          <Separator orientation="vertical" />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-full w-12.5 rounded-md border-y-0 border-border text-muted-foreground hover:text-foreground"
-            onClick={() => setOpen((o) => !o)}
-          >
-            <ChevronUp
-              className={`size-4 transition-transform ${open ? "" : "rotate-180"}`}
-            />
-          </Button>
         </div>
-      </div>
-      {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          className="flex  items-center justify-center w-full h-6 bg-sidebar border-b border-border text-muted-foreground hover:text-accent-brand hover:bg-accent-brand/5 transition-colors shrink-0"
-        >
-          <ChevronDown className="size-3.5" />
-        </button>
-      )}
 
+        {/* Pinned to the strip's right edge, outside the scrolling tab list, so
+            it stays put when tabs overflow. */}
+        {onOpenAlerts && (
+          <button
+            onClick={() => onOpenAlerts()}
+            title={t("nav.alerts")}
+            style={inlineTitleBar ? NO_DRAG : undefined}
+            className="relative mr-2 flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
+          >
+            <Bell className="size-4.5" />
+            {unreadAlerts > 0 && (
+              <span className="absolute top-1 right-1 flex min-w-3 items-center justify-center rounded-full bg-destructive px-0.5 text-[8px] leading-none font-bold text-white">
+                {unreadAlerts > 9 ? "9+" : unreadAlerts}
+              </span>
+            )}
+          </button>
+        )}
+      </div>
       {/* Right-click context menu */}
       {contextTabId &&
         contextPos &&

@@ -585,6 +585,7 @@ export function registerHostBulkRoutes(
               ? "true"
               : "false",
             notes: hostData.notes || null,
+            osIcon: hostData.osIcon || null,
             useSocks5: hostData.useSocks5 ? 1 : 0,
             socks5Host: hostData.socks5Host || null,
             socks5Port: hostData.socks5Port || null,
@@ -873,6 +874,44 @@ export function registerHostBulkRoutes(
           results.failed++;
           results.errors.push(
             `Host "${parsed[i].name}": ${error instanceof Error ? error.message : "Unknown error"}`,
+          );
+        }
+      }
+
+      // Link ProxyJump chains now that every host in the batch has an id.
+      // Written as [{ hostId }] because that is what buildJumpHostChain reads;
+      // a name-based entry silently fails at connect time with
+      // "Jump host N not found".
+      const withProxyJump = parsed.filter((h) => h.proxyJump);
+      if (withProxyJump.length > 0) {
+        try {
+          const allHosts =
+            await createCurrentHostResolutionRepository().findHostsByUserId(
+              userId,
+            );
+          const byName = new Map<string, number>();
+          for (const h of allHosts) {
+            if (typeof h.name === "string") byName.set(h.name, h.id as number);
+          }
+
+          for (const h of withProxyJump) {
+            const selfId = byName.get(h.name);
+            const jumpId = byName.get(h.proxyJump as string);
+            if (selfId == null) continue;
+            if (jumpId == null) {
+              results.errors.push(
+                `Host "${h.name}": ProxyJump target "${h.proxyJump}" not found, jump chain not set`,
+              );
+              continue;
+            }
+            await hostRepository.updateEncryptedForUser(userId, selfId, {
+              jumpHosts: JSON.stringify([{ hostId: jumpId }]),
+              updatedAt: new Date().toISOString(),
+            });
+          }
+        } catch (error) {
+          results.errors.push(
+            `Failed to link ProxyJump chains: ${error instanceof Error ? error.message : "Unknown error"}`,
           );
         }
       }

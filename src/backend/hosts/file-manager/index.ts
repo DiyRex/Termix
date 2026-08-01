@@ -734,6 +734,9 @@ app.post("/ssh/file_manager/ssh/connect", async (req, res) => {
     authType,
     sudoPassword: undefined as string | undefined,
   };
+  // Retained beyond the resolution block below: Vault auth needs the signer
+  // profile that resolveHostById attaches to the host.
+  let resolvedVaultProfileId: number | undefined;
   let hostKeepaliveInterval: number | undefined;
   let hostKeepaliveCountMax: number | undefined;
   let resolvedIp = ip;
@@ -763,6 +766,9 @@ app.post("/ssh/file_manager/ssh/connect", async (req, res) => {
           authType: resolvedHost.authType,
           sudoPassword: resolvedHost.sudoPassword as string | undefined,
         };
+        resolvedVaultProfileId = (
+          resolvedHost as unknown as { vaultProfile?: { id?: number } }
+        ).vaultProfile?.id;
         resolvedTerminalConfig = resolvedHost.terminalConfig as unknown as
           | Record<string, unknown>
           | undefined;
@@ -822,6 +828,9 @@ app.post("/ssh/file_manager/ssh/connect", async (req, res) => {
           authType: resolvedHost.authType,
           sudoPassword: resolvedHost.sudoPassword as string | undefined,
         };
+        resolvedVaultProfileId = (
+          resolvedHost as unknown as { vaultProfile?: { id?: number } }
+        ).vaultProfile?.id;
         resolvedTerminalConfig = resolvedHost.terminalConfig as unknown as
           | Record<string, unknown>
           | undefined;
@@ -1054,6 +1063,71 @@ app.post("/ssh/file_manager/ssh/connect", async (req, res) => {
         connectionLogs,
       });
     }
+  } else if (resolvedCredentials.authType === "vault") {
+    // Vault issues a short-lived signed certificate at connect time, so there
+    // is no stored key or password to find — which is why this used to fall
+    // through to "Either password or SSH key must be provided" even though the
+    // terminal connected to the same host fine.
+    try {
+      if (!resolvedVaultProfileId) {
+        throw new Error("Host has no Vault signer profile configured");
+      }
+
+      const { getVaultCert } = await import("../vault-signer-auth.js");
+      const cert = await getVaultCert(userId, resolvedVaultProfileId);
+
+      if (!cert) {
+        // Unlike the terminal there is no socket to push a prompt down, so this
+        // reports the required action instead of stalling.
+        connectionLogs.push(
+          createConnectionLog(
+            "error",
+            "sftp_auth",
+            "Vault authentication required — open a terminal to this host to sign in, then retry",
+          ),
+        );
+        return res.status(401).json({
+          error: "Vault authentication required",
+          vaultAuthRequired: true,
+          connectionLogs,
+        });
+      }
+
+      const { setupOPKSSHCertAuth } = await import("../opkssh-cert-auth.js");
+      await setupOPKSSHCertAuth(
+        config as import("ssh2").ConnectConfig,
+        client,
+        { privateKey: cert.privateKey, sshCert: cert.sshCert },
+        resolvedUsername,
+      );
+      connectionLogs.push(
+        createConnectionLog(
+          "info",
+          "sftp_auth",
+          "Using Vault-signed certificate authentication",
+        ),
+      );
+    } catch (vaultError) {
+      const message =
+        vaultError instanceof Error ? vaultError.message : "Unknown error";
+      fileLogger.error("Vault SSH signer authentication error", {
+        operation: "file_connect",
+        sessionId,
+        hostId,
+        error: message,
+      });
+      connectionLogs.push(
+        createConnectionLog(
+          "error",
+          "sftp_auth",
+          `Vault SSH signer authentication failed: ${message}`,
+        ),
+      );
+      return res.status(500).json({
+        error: `Vault SSH signer authentication failed: ${message}`,
+        connectionLogs,
+      });
+    }
   } else if (resolvedCredentials.authType === "agent") {
     const result = await applyAgentAuth(config, resolvedTerminalConfig);
     if ("error" in result) {
@@ -1093,15 +1167,23 @@ app.post("/ssh/file_manager/ssh/connect", async (req, res) => {
         hasKey: !!resolvedCredentials.sshKey,
       },
     );
+    // Say which auth type was resolved and what was missing. "Either password
+    // or SSH key must be provided" gave no way to tell an unassigned credential
+    // apart from one that failed to decrypt, or from an auth type this endpoint
+    // simply does not implement.
+    const diagnosis =
+      resolvedCredentials.authType === "credential"
+        ? "the host is set to use a saved credential, but none is assigned to it or to its folder"
+        : `auth type "${resolvedCredentials.authType ?? "unset"}" resolved no password or key`;
     connectionLogs.push(
       createConnectionLog(
         "error",
         "sftp_auth",
-        "No valid authentication method provided",
+        `No usable credentials for this host: ${diagnosis}. Check the host's Authentication settings.`,
       ),
     );
     return res.status(400).json({
-      error: "Either password or SSH key must be provided",
+      error: `No usable credentials for this host: ${diagnosis}`,
       connectionLogs,
     });
   }

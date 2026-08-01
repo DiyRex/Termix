@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Clock,
@@ -75,7 +75,6 @@ function isRailViewItem(item: RailItem): item is RailViewItem {
 const PRIMARY_RAIL_TABS = new Set<string>([]);
 
 const PRIMARY_RAIL_VIEWS = new Set<string>([
-  "dashboard",
   "hosts",
   "credentials",
   "connections",
@@ -180,7 +179,7 @@ function buildRailButtons(
 }
 
 const btnBase =
-  "relative flex items-center h-9 rounded-xl shrink-0 transition-colors gap-3";
+  "relative flex items-center h-8 rounded-lg shrink-0 transition-colors gap-2.5";
 const btnStyle = { margin: "0 8px", padding: "0 10px" };
 
 export function AppRail({
@@ -203,6 +202,18 @@ export function AppRail({
   const { t } = useTranslation();
   const [moreOpen, setMoreOpen] = useState(false);
   const [unreadAlerts, setUnreadAlerts] = useState(0);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const accountRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!accountOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (!accountRef.current?.contains(e.target as Node))
+        setAccountOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [accountOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -334,7 +345,7 @@ export function AppRail({
   return (
     <div
       className="hidden md:flex flex-col items-stretch bg-sidebar border-r border-border/40 shrink-0 overflow-hidden py-2 gap-0.5 transition-[width] duration-200 min-h-0"
-      style={{ width: railExpanded ? 208 : 56 }}
+      style={{ width: railExpanded ? 190 : 52 }}
     >
       <div className="flex flex-col flex-1 gap-1 overflow-y-auto scrollbar-none min-h-0">
         {primaryItems.map((item, i) =>
@@ -354,7 +365,7 @@ export function AppRail({
                 {item.icon}
               </span>
               <span
-                className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${
+                className={`text-[13px] font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${
                   railExpanded ? "opacity-100 delay-75" : "opacity-0 w-0"
                 }`}
               >
@@ -379,7 +390,7 @@ export function AppRail({
                 {item.icon}
               </span>
               <span
-                className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${
+                className={`text-[13px] font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${
                   railExpanded ? "opacity-100 delay-75" : "opacity-0 w-0"
                 }`}
               >
@@ -411,7 +422,7 @@ export function AppRail({
                 <MoreHorizontal size={16} />
               </span>
               <span
-                className={`flex-1 text-sm font-medium whitespace-nowrap overflow-hidden text-left transition-[opacity,width] duration-150 ${
+                className={`flex-1 text-[13px] font-medium whitespace-nowrap overflow-hidden text-left transition-[opacity,width] duration-150 ${
                   railExpanded ? "opacity-100 delay-75" : "opacity-0 w-0"
                 }`}
               >
@@ -441,7 +452,7 @@ export function AppRail({
                       {item.icon}
                     </span>
                     <span
-                      className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${
+                      className={`text-[13px] font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${
                         railExpanded ? "opacity-100 delay-75" : "opacity-0 w-0"
                       }`}
                     >
@@ -466,7 +477,7 @@ export function AppRail({
                       {item.icon}
                     </span>
                     <span
-                      className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${
+                      className={`text-[13px] font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${
                         railExpanded ? "opacity-100 delay-75" : "opacity-0 w-0"
                       }`}
                     >
@@ -484,85 +495,69 @@ export function AppRail({
         )}
       </div>
 
-      <div className="shrink-0 flex flex-col gap-0.5 pt-2 pb-1">
-        {[
-          {
-            view: "settings" as RailView,
-            icon: <Settings size={16} />,
-            title: t("nav.settings"),
-          },
-        ].map((item) => (
-          <button
-            key={item.view}
-            onClick={() => onRailClick(item.view)}
-            style={btnStyle}
-            className={`${btnBase} ${
-              railView === item.view
-                ? "text-accent-brand bg-accent-brand/15 ring-1 ring-accent-brand/25"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-            }`}
-          >
-            <span
-              className="relative shrink-0 flex items-center justify-center"
-              style={{ width: 16, height: 16 }}
+      {/* One account row instead of the four stacked zones this used to be
+          (Settings button, rule, Logout button, user card). Settings and logout
+          live in its menu, so the rail reads as a list of destinations. */}
+      <div ref={accountRef} className="relative shrink-0 pt-1">
+        {accountOpen && (
+          <div className="absolute bottom-full left-2 right-2 z-50 mb-1 overflow-hidden rounded-lg border border-border bg-popover py-1 shadow-xl">
+            <button
+              onClick={() => {
+                setAccountOpen(false);
+                onRailClick("settings");
+              }}
+              className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs transition-colors hover:bg-accent hover:text-accent-foreground"
             >
-              {item.icon}
-              {item.view === "settings" && unreadAlerts > 0 && (
-                <span className="absolute -top-1 -right-1 flex size-3 items-center justify-center rounded-full bg-destructive text-[8px] font-bold text-white leading-none">
+              <Settings size={14} />
+              <span className="flex-1">{t("nav.settings")}</span>
+              {unreadAlerts > 0 && (
+                <span className="flex size-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold leading-none text-white">
                   {unreadAlerts > 9 ? "9+" : unreadAlerts}
                 </span>
               )}
-            </span>
-            <span
-              className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${railExpanded ? "opacity-100 delay-75" : "opacity-0 w-0"}`}
+            </button>
+            <button
+              onClick={() => {
+                setAccountOpen(false);
+                onLogout();
+              }}
+              className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
             >
-              {item.title}
-            </span>
-          </button>
-        ))}
-        <div className="mx-3 my-1.5 border-t border-border/50" />
+              <LogOut size={14} />
+              {t("common.logout")}
+            </button>
+          </div>
+        )}
         <button
-          onClick={onLogout}
-          style={btnStyle}
-          className={`${btnBase} text-muted-foreground hover:text-destructive hover:bg-destructive/10`}
-        >
-          <span
-            className="shrink-0 flex items-center justify-center"
-            style={{ width: 16, height: 16 }}
-          >
-            <LogOut size={16} />
-          </span>
-          <span
-            className={`text-sm font-medium whitespace-nowrap overflow-hidden transition-[opacity,width] duration-150 ${railExpanded ? "opacity-100 delay-75" : "opacity-0 w-0"}`}
-          >
-            {t("common.logout")}
-          </span>
-        </button>
-      </div>
-
-      <div className="shrink-0 mt-1 pt-1 border-t border-border/50">
-        <button
-          className="flex items-center gap-3 h-11 mx-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+          onClick={() => setAccountOpen((v) => !v)}
+          className={`mx-2 flex h-10 items-center gap-2.5 rounded-lg transition-colors ${
+            railView === "settings"
+              ? "text-accent-brand"
+              : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+          }`}
           style={{ padding: "0 10px" }}
         >
           <div
-            className="rounded-full bg-accent-brand/20 border border-accent-brand/30 flex items-center justify-center font-bold text-accent-brand shrink-0"
-            style={{ width: 24, height: 24, fontSize: 11 }}
+            className="relative flex shrink-0 items-center justify-center rounded-full border border-accent-brand/30 bg-accent-brand/20 font-bold text-accent-brand"
+            style={{ width: 22, height: 22, fontSize: 10 }}
           >
             {username.charAt(0).toUpperCase() || "U"}
+            {unreadAlerts > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-destructive" />
+            )}
           </div>
-          <div
-            className={`flex flex-col items-start overflow-hidden transition-opacity duration-150 ${
-              railExpanded ? "opacity-100 delay-75" : "opacity-0"
-            }`}
-          >
-            <span className="text-sm font-semibold leading-tight whitespace-nowrap">
+          <div className="flex min-w-0 flex-col items-start overflow-hidden">
+            <span className="truncate text-sm leading-tight font-semibold whitespace-nowrap">
               {username || "User"}
             </span>
-            <span className="text-xs text-muted-foreground leading-tight whitespace-nowrap">
+            <span className="text-xs leading-tight whitespace-nowrap text-muted-foreground">
               {isAdmin ? t("nav.roleAdministrator") : t("nav.roleUser")}
             </span>
           </div>
+          <ChevronDown
+            size={13}
+            className={`ml-auto shrink-0 transition-transform ${accountOpen ? "rotate-180" : ""}`}
+          />
         </button>
       </div>
     </div>

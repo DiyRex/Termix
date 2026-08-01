@@ -219,11 +219,11 @@ export function RemoteSyncPanel({ initialServerUrl }: RemoteSyncPanelProps) {
         <p className="text-xs text-muted-foreground">
           {t("remoteSync.originDescription")}
         </p>
-        <div className="flex border border-border overflow-hidden w-fit">
+        <div className="flex rounded-full border border-border overflow-hidden w-fit">
           <button
             type="button"
             onClick={() => handleOriginChange("local")}
-            className={`px-3 py-1.5 text-xs font-bold uppercase tracking-widest transition-colors ${
+            className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest transition-colors ${
               desktopSettings.defaultConnectionOrigin === "local"
                 ? "bg-accent-brand text-background"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -235,7 +235,7 @@ export function RemoteSyncPanel({ initialServerUrl }: RemoteSyncPanelProps) {
             type="button"
             onClick={() => handleOriginChange("remote")}
             disabled={!isConnected}
-            className={`px-3 py-1.5 text-xs font-bold uppercase tracking-widest transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+            className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-widest transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
               desktopSettings.defaultConnectionOrigin === "remote"
                 ? "bg-accent-brand text-background"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"

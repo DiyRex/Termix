@@ -19,7 +19,8 @@ import {
   getLinkedCredentialIds,
 } from "@/main-axios";
 
-import type { Host, Credential } from "@/types/ui-types";
+import type { Host, Credential, TabType } from "@/types/ui-types";
+import { resolveHostTabType } from "@/lib/host-connection-tabs";
 import { CredentialEditorView } from "./CredentialEditorView";
 import { HostEditor } from "./HostEditor";
 import { mapCredentials, sshHostToHost } from "./HostManagerData";
@@ -83,6 +84,7 @@ export function HostManager({
   externalFilter,
   onTagsChange,
   active = true,
+  onOpenTab,
 }: {
   pendingEditId?: MutableRefObject<string | null>;
   pendingAction?: MutableRefObject<"add-host" | "add-credential" | null>;
@@ -93,6 +95,9 @@ export function HostManager({
   externalFilter?: CredentialFilterState;
   onTagsChange?: (tags: string[]) => void;
   active?: boolean;
+  // Lets the host editor's Connect button open a session for the host it
+  // just saved. Omitted when no tab surface is available.
+  onOpenTab?: (host: Host, type: TabType) => void;
 } = {}) {
   const { t } = useTranslation();
   const [editingHost, setEditingHost] = useState<Host | "new" | null>(null);
@@ -410,6 +415,14 @@ export function HostManager({
                 setEditingHost(null);
                 setActiveHostTab("general");
               }}
+              onConnect={
+                onOpenTab
+                  ? (saved) => {
+                      const converted = sshHostToHost(saved);
+                      onOpenTab(converted, resolveHostTabType(converted));
+                    }
+                  : undefined
+              }
               protocols={editingProtocols}
               onProtocolChange={(p) =>
                 setEditingProtocols((prev) => ({ ...prev, ...p }))

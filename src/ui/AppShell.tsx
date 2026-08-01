@@ -150,7 +150,9 @@ import { TransferMonitor } from "@/features/file-manager/TransferMonitor.tsx";
 import { sshHostToHost } from "@/sidebar/HostManagerData";
 import { resolveHostTabType } from "@/lib/host-connection-tabs";
 import { changeAppLanguage } from "@/i18n/i18n";
+import { getAlertFirings } from "@/api/alerts-api";
 import { quickConnectHostToPayload } from "@/sidebar/quick-connect-host";
+import { VaultTabMenu } from "@/shell/VaultTabMenu";
 
 function buildHostTree(
   hosts: SSHHostWithStatus[],
@@ -201,6 +203,22 @@ function buildHostTree(
 }
 export { tabIcon, renderTabContent } from "@/shell/tabUtils";
 
+/**
+ * The pinned first tab. It is chrome rather than a session: it owns the
+ * navigation rail and whichever rail destination is active, and every other tab
+ * is a full-window session with no rail beside it.
+ */
+const VAULT_TAB_ID = "vaults";
+
+/** The pinned SFTP tab — local filesystem beside a remote host. */
+const SFTP_TAB_ID = "sftp";
+
+function makeLocalTerminalId() {
+  return typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
 // ─── AppShell ────────────────────────────────────────────────────────────────
 
 export function AppShell({
@@ -214,14 +232,21 @@ export function AppShell({
   const { setTheme } = useTheme();
   const [tabs, setTabs] = useState<Tab[]>([
     {
-      id: "dashboard",
-      instanceId: "dashboard",
-      type: "dashboard",
-      label: t("nav.dashboard"),
+      id: VAULT_TAB_ID,
+      instanceId: VAULT_TAB_ID,
+      type: "vaults",
+      label: t("nav.vaults"),
+      openedAt: Date.now(),
+    },
+    {
+      id: SFTP_TAB_ID,
+      instanceId: SFTP_TAB_ID,
+      type: "sftp",
+      label: t("nav.sftp"),
       openedAt: Date.now(),
     },
   ]);
-  const [activeTabId, setActiveTabId] = useState("dashboard");
+  const [activeTabId, setActiveTabId] = useState(VAULT_TAB_ID);
   const [userPrefs, setUserPrefs] = useState<UserPreferences>({
     reopenTabsOnLogin: false,
   });
@@ -272,9 +297,12 @@ export function AppShell({
     string | undefined
   >(undefined);
   const [sidebarEditing, setSidebarEditing] = useState(false);
-  const [isAppFullscreen, setIsAppFullscreen] = useState(
-    () => !!document.fullscreenElement,
-  );
+  const [unreadAlerts, setUnreadAlerts] = useState(0);
+  // Screen position of the vault tab's chevron while its menu is open.
+  const [vaultMenuAnchor, setVaultMenuAnchor] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   useEffect(() => {
     localStorage.setItem("termix_splitMode", splitMode);
@@ -357,16 +385,6 @@ export function AppShell({
     }
   }, []);
 
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsAppFullscreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () =>
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-  }, []);
-
   const lastShiftTime = useRef(0);
   const tabsRef = useRef(tabs);
   const activeTabIdRef = useRef(activeTabId);
@@ -396,6 +414,11 @@ export function AppShell({
   const terminalRefs = useRef<Map<string, ReturnType<typeof createRef>>>(
     new Map(),
   );
+  // The global hotkey listener is registered once with no deps, so it reaches
+  // the current callback through a ref instead of closing over a stale one.
+  const openLocalTerminalRef = useRef<(() => void) | null>(null);
+  const closeTabRef = useRef<((id: string) => void) | null>(null);
+  const setActiveTabIdRef = useRef<((id: string) => void) | null>(null);
   const [paneContentEls, setPaneContentEls] = useState<
     (HTMLDivElement | null)[]
   >(Array(6).fill(null));
@@ -434,9 +457,22 @@ export function AppShell({
     [],
   );
 
-  // Double-shift opens command palette
+  // Command palette. Cmd/Ctrl+J jumps between open tabs and Cmd/Ctrl+T starts a
+  // new connection — the accelerators every tabbed terminal uses, and the ones
+  // discoverable from a menu. Double-tapping shift still works but is no longer
+  // the only way in: it is invisible in the UI and fires while typing in a
+  // shell, which is a poor primary binding.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const accel = e.metaKey || e.ctrlKey;
+      if (accel && !e.altKey && !e.shiftKey) {
+        if (e.code === "KeyJ" || e.code === "KeyT") {
+          e.preventDefault();
+          setCommandPaletteOpen(true);
+          return;
+        }
+      }
+
       if (e.code === "ShiftLeft" && !e.repeat) {
         const now = Date.now();
         if (now - lastShiftTime.current < 300 && commandPaletteShortcutEnabled)
@@ -479,7 +515,7 @@ export function AppShell({
           let slot = 1;
           for (const tab of currentTabs) {
             if (slot >= count) break;
-            if (tab.id !== currentActiveId && tab.type !== "dashboard") {
+            if (tab.id !== currentActiveId && tab.type !== "vaults") {
               next[slot] = tab.id;
               slot++;
             }
@@ -508,7 +544,7 @@ export function AppShell({
           let slot = 1;
           for (const tab of currentTabs) {
             if (slot >= count) break;
-            if (tab.id !== currentActiveId && tab.type !== "dashboard") {
+            if (tab.id !== currentActiveId && tab.type !== "vaults") {
               next[slot] = tab.id;
               slot++;
             }
@@ -598,8 +634,46 @@ export function AppShell({
         }
       }
 
-      // Ctrl+Shift+] / Ctrl+Shift+[ — cycle through open tabs (] = next, [ = previous)
-      if (e.ctrlKey && e.shiftKey && !e.altKey && !e.metaKey) {
+      // Cmd+L (macOS) / Ctrl+Shift+L — open a new local console in a new tab.
+      // Plain Ctrl+L is off limits: that is "clear screen" inside a shell.
+      const wantsLocalConsole =
+        e.code === "KeyL" &&
+        (e.metaKey
+          ? !e.ctrlKey && !e.altKey && !e.shiftKey
+          : e.ctrlKey && e.shiftKey && !e.altKey);
+      if (wantsLocalConsole) {
+        e.preventDefault();
+        openLocalTerminalRef.current?.();
+        return;
+      }
+
+      // Cmd+W closes the active tab (pinned chrome ignores it), and Cmd+1..9
+      // jumps to a tab by position — the accelerators every tabbed app uses.
+      // Guarded to metaKey so they don't collide with Ctrl+W/Ctrl+1 inside a
+      // shell, where those are readline and application keys.
+      if (e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+        if (e.code === "KeyW") {
+          e.preventDefault();
+          closeTabRef.current?.(activeTabIdRef.current);
+          return;
+        }
+        const digit = /^Digit([1-9])$/.exec(e.code);
+        if (digit) {
+          e.preventDefault();
+          const index = Number(digit[1]) - 1;
+          const target = tabsRef.current[index];
+          if (target) setActiveTabIdRef.current?.(target.id);
+          return;
+        }
+      }
+
+      // Ctrl+Shift+] / Ctrl+Shift+[ or Cmd+Shift+[ / ] — cycle through open tabs
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        e.shiftKey &&
+        !e.altKey &&
+        !(e.ctrlKey && e.metaKey)
+      ) {
         if (e.code === "BracketRight" || e.code === "BracketLeft") {
           e.preventDefault();
           const currentTabs = tabsRef.current;
@@ -989,6 +1063,9 @@ export function AppShell({
                 return newTabs.length > 0 ? [...prev, ...newTabs] : prev;
               });
               setActiveTabId(restoredTabs[0].id);
+              // A restored session owns the content area; leaving the rail
+              // active would draw the vault on top of it.
+              setRailViewActive(false);
             }
             // Restored tabs are in the tab bar, not in background records
           }
@@ -1237,6 +1314,107 @@ export function AppShell({
     });
   }
 
+  /**
+   * A shell on this machine. Hostless by design — there is nothing to connect
+   * to, so it takes neither a Host nor a saved-session record (a PTY dies with
+   * the app and cannot be reattached the way an SSH session can).
+   */
+  const openLocalTerminalTab = useCallback(() => {
+    const tabId = `local-terminal-${Date.now()}`;
+    const instanceId = makeLocalTerminalId();
+    const ref = createRef();
+    terminalRefs.current.set(tabId, ref);
+
+    setTabs((prev) => {
+      const base = t("localTerminal.label");
+      const same = prev.filter(
+        (tab) =>
+          tab.type === "local-terminal" &&
+          tab.label.replace(/ \(\d+\)$/, "") === base,
+      );
+      const label = same.length === 0 ? base : `${base} (${same.length + 1})`;
+
+      // Retrofit the first one to "(1)" so the numbering reads consistently,
+      // matching how host tabs are labelled.
+      const next =
+        same.length === 1 && !/\(\d+\)$/.test(same[0].label)
+          ? prev.map((tab) =>
+              tab.id === same[0].id ? { ...tab, label: `${base} (1)` } : tab,
+            )
+          : prev;
+
+      return [
+        ...next,
+        {
+          id: tabId,
+          instanceId,
+          type: "local-terminal" as TabType,
+          label,
+          openedAt: Date.now(),
+          terminalRef: ref,
+        },
+      ];
+    });
+    setRailViewActive(false);
+    setActiveTabId(tabId);
+  }, [t]);
+
+  useEffect(() => {
+    openLocalTerminalRef.current = openLocalTerminalTab;
+    return () => {
+      openLocalTerminalRef.current = null;
+    };
+  }, [openLocalTerminalTab]);
+
+  /** Same behaviour as clicking a tab in the strip, for the keyboard paths. */
+  const selectTab = useCallback((id: string) => {
+    setRailViewActive(id === VAULT_TAB_ID);
+    setActiveTabId(id);
+  }, []);
+
+  // Unacknowledged alert count for the tab strip's bell. Paused while hidden so
+  // a backgrounded window isn't polling, matching what the rail badge does.
+  useEffect(() => {
+    if (!username) return;
+    let cancelled = false;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const poll = () => {
+      if (document.visibilityState === "hidden") return;
+      getAlertFirings({ acknowledged: false, limit: 50 })
+        .then((firings) => {
+          if (!cancelled) setUnreadAlerts(firings.length);
+        })
+        .catch(() => {});
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        if (intervalId) clearInterval(intervalId);
+        intervalId = null;
+        return;
+      }
+      poll();
+      if (!intervalId) intervalId = setInterval(poll, 30000);
+    };
+
+    poll();
+    if (document.visibilityState !== "hidden")
+      intervalId = setInterval(poll, 30000);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      cancelled = true;
+      if (intervalId) clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [username]);
+
+  useEffect(() => {
+    setActiveTabIdRef.current = selectTab;
+    return () => {
+      setActiveTabIdRef.current = null;
+    };
+  }, [selectTab]);
+
   const openSingletonTab = useCallback(
     // --- tmux-monitor --- (added optional `host` so tmux_monitor can open
     // with a preselected host; existing callers are unaffected)
@@ -1329,6 +1507,7 @@ export function AppShell({
 
   const SESSION_TAB_TYPES: TabType[] = [
     "terminal",
+    "local-terminal",
     "rdp",
     "vnc",
     "telnet",
@@ -1366,6 +1545,9 @@ export function AppShell({
 
   function doCloseTab(id: string) {
     const tabToClose = tabs.find((t) => t.id === id);
+    // Pinned chrome, not a session. Guarded here rather than only in the tab
+    // bar so no future caller (a menu item, a hotkey) can remove it.
+    if (tabToClose?.type === "vaults" || tabToClose?.type === "sftp") return;
     if (tabToClose?.terminalRef?.current?.disconnect) {
       tabToClose.terminalRef.current.disconnect();
     }
@@ -1379,31 +1561,31 @@ export function AppShell({
     terminalRefs.current.delete(id);
     if (id === activeTabId) {
       const remaining = tabs.filter((t) => t.id !== id);
-      setActiveTabId(
-        remaining.length > 0 ? remaining[remaining.length - 1].id : "dashboard",
-      );
+      const fallback =
+        remaining.length > 0
+          ? remaining[remaining.length - 1]
+          : { id: VAULT_TAB_ID, type: "vaults" as TabType };
+      setActiveTabId(fallback.id);
+      // The rail owns the content area only while the vault tab is in front.
+      // Assigned rather than conditionally set: falling back onto any other tab
+      // (a session, or the pinned SFTP tab) must also take the overlay down.
+      setRailViewActive(fallback.type === "vaults");
     }
     setPaneTabIds((prev) => prev.map((p) => (p === id ? null : p)));
     setTabs((prev) => {
       const next = prev.filter((t) => t.id !== id);
-      if (next.length === 0)
-        return [
-          {
-            id: "dashboard",
-            instanceId: "dashboard",
-            type: "dashboard",
-            label: t("nav.dashboard"),
-            openedAt: Date.now(),
-          },
-        ];
       return next;
     });
   }
 
+  // Registered for the once-bound global hotkey listener, which cannot close
+  // over the function declaration below without going stale.
+  closeTabRef.current = (id: string) => closeTab(id);
+
   function refreshTab(id: string) {
     const tab = tabs.find((t) => t.id === id);
     if (!tab) return;
-    if (tab.type === "terminal") {
+    if (tab.type === "terminal" || tab.type === "local-terminal") {
       const ref = tab.terminalRef?.current;
       ref?.reconnect?.();
     } else if (["rdp", "vnc", "telnet"].includes(tab.type)) {
@@ -1483,7 +1665,7 @@ export function AppShell({
       let slot = 1;
       for (const tab of tabs) {
         if (slot >= count) break;
-        if (tab.id !== tabId && tab.type !== "dashboard") {
+        if (tab.id !== tabId && tab.type !== "vaults") {
           next[slot] = tab.id;
           slot++;
         }
@@ -1526,6 +1708,9 @@ export function AppShell({
     if (view !== railView) setSidebarEditing(false);
     setRailView(view);
     setRailViewActive(true);
+    // The rail lives inside the vault tab, so activating a destination has to
+    // bring that tab forward too.
+    setActiveTabId(VAULT_TAB_ID);
     // The third column is only for the host editor; a rail click never opens it.
     setSidebarOpen(false);
   }
@@ -1533,6 +1718,10 @@ export function AppShell({
   function editHostInManager(host: Host) {
     setSidebarOpen(true);
     setRailView("hosts");
+    // The host editor renders inside the vault, so it has to be the front tab
+    // even when the call came from a session tab.
+    setRailViewActive(true);
+    setActiveTabId(VAULT_TAB_ID);
     setTimeout(() => {
       window.dispatchEvent(
         new CustomEvent("host-manager:edit-host", { detail: host.id }),
@@ -1867,19 +2056,9 @@ export function AppShell({
           </>
         )}
         <div className="flex flex-1 min-h-0">
-          {/* Skinny icon rail — desktop only, hidden on mobile */}
-          <AppRail
-            railView={railView}
-            splitMode={splitMode}
-            username={username}
-            isAdmin={showMultiUserUI}
-            onRailClick={handleRailClick}
-            onOpenTab={openSingletonTab}
-            onLogout={onLogout}
-          />
-
-          {/* The middle column is gone: every destination renders in the
-              content area, and the host/credential editors render there too. */}
+          {/* The navigation rail is no longer app-level chrome: it belongs to
+              the vault tab and is rendered inside it, below. A session tab
+              therefore gets the entire window under the tab strip. */}
 
           {/* Main content area */}
           {/* No reopen affordance: there is no third column to reopen. */}
@@ -1892,7 +2071,9 @@ export function AppShell({
                 paneTabIds={paneTabIds}
                 focusedPaneIndex={focusedPaneIndex}
                 onSetActiveTab={(id) => {
-                  setRailViewActive(false);
+                  // The vault tab is the rail's own tab; every other tab is a
+                  // session that owns the whole content area.
+                  setRailViewActive(id === VAULT_TAB_ID);
                   setActiveTabId(id);
                 }}
                 onCloseTab={closeTab}
@@ -1907,100 +2088,111 @@ export function AppShell({
                   if (targetTab?.host) openTab(targetTab.host, "files");
                 }}
                 onOpenShare={openShareForTab}
-                isAppFullscreen={isAppFullscreen}
-                onToggleAppFullscreen={toggleAppFullscreen}
+                onOpenVaultMenu={setVaultMenuAnchor}
+                // A new tab means "pick something to connect to", so it brings
+                // the vault's host list forward. The local console keeps its own
+                // entry points (the Terminal button and Cmd+L).
+                onNewTab={() => handleRailClick("hosts")}
+                unreadAlerts={unreadAlerts}
+                onOpenAlerts={() => handleRailClick("alerts")}
               />
               <div className="relative flex flex-col flex-1 min-h-0 overflow-hidden">
                 {/* Rail destination owning the content area. Sessions stay
                     mounted underneath so switching back to a tab does not tear
                     down a live terminal. */}
                 {railViewActive && (
-                  <div className="absolute inset-0 z-10 flex flex-col bg-background">
-                    {railView === "hosts" || railView === "credentials" ? (
-                      // Both of these have a browse view and an editor. The
-                      // panel stays mounted (hidden) so the events that open
-                      // its editor always land, and the grid sits on top until
-                      // the panel reports that it is editing.
-                      <>
-                        <div
-                          className={
-                            sidebarEditing
-                              ? "flex flex-1 flex-col min-h-0"
-                              : "hidden"
-                          }
-                        >
-                          {renderRailPanels(railView)}
-                        </div>
-                        {!sidebarEditing && (
-                          <Suspense fallback={<SidebarPanelFallback />}>
-                            {railView === "hosts" ? (
-                              <HostsTab
-                                hostTree={realHostTree ?? undefined}
-                                onOpenTab={(host, type) => {
-                                  setRailViewActive(false);
-                                  openTab(host, type);
-                                }}
-                                onEditHost={editHostInManager}
-                              />
-                            ) : (
-                              <CredentialsTab
-                                onAddCredential={() =>
-                                  window.dispatchEvent(
-                                    new CustomEvent(
-                                      "host-manager:add-credential",
-                                    ),
-                                  )
-                                }
-                              />
-                            )}
-                          </Suspense>
-                        )}
-                      </>
-                    ) : railView === "settings" ? (
-                      <Suspense fallback={<SidebarPanelFallback />}>
-                        <SettingsTab
-                          sections={[
-                            {
-                              id: "user-profile",
-                              label: t("nav.userProfile"),
-                              node: renderRailPanels("user-profile"),
-                            },
-                            {
-                              id: "alerts",
-                              label: t("nav.alerts"),
-                              node: renderRailPanels("alerts"),
-                            },
-                            {
-                              id: "ssh-tools",
-                              label: t("nav.sshTools"),
-                              node: renderRailPanels("ssh-tools"),
-                            },
-                            ...(showMultiUserUI && isAdmin
-                              ? [
-                                  {
-                                    id: "admin-settings",
-                                    label: t("nav.admin"),
-                                    node: renderRailPanels("admin-settings"),
-                                  },
-                                ]
-                              : []),
-                          ]}
-                        />
-                      </Suspense>
-                    ) : railView === "dashboard" ? (
-                      <Suspense fallback={<SidebarPanelFallback />}>
-                        <DashboardTab
-                          onOpenSingletonTab={openSingletonTab}
-                          onOpenTab={(host, type) => {
-                            setRailViewActive(false);
-                            openTab(host, type);
-                          }}
-                          isVisible
-                        />
-                      </Suspense>
-                    ) : (
-                      renderRailPanels(railView)
-                    )}
+                  <div className="absolute inset-0 z-10 flex bg-background">
+                    {/* The vault's own sidebar. Desktop only; on mobile the
+                        bottom bar takes its place. */}
+                    <AppRail
+                      railView={railView}
+                      splitMode={splitMode}
+                      username={username}
+                      isAdmin={showMultiUserUI}
+                      onRailClick={handleRailClick}
+                      onOpenTab={openSingletonTab}
+                      onLogout={onLogout}
+                    />
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      {railView === "hosts" || railView === "credentials" ? (
+                        // Both of these have a browse view and an editor. The
+                        // panel stays mounted (hidden) so the events that open
+                        // its editor always land, and the grid sits on top until
+                        // the panel reports that it is editing.
+                        <>
+                          <div
+                            className={
+                              sidebarEditing
+                                ? "flex flex-1 flex-col min-h-0"
+                                : "hidden"
+                            }
+                          >
+                            {renderRailPanels(railView)}
+                          </div>
+                          {!sidebarEditing && (
+                            <Suspense fallback={<SidebarPanelFallback />}>
+                              {railView === "hosts" ? (
+                                <HostsTab
+                                  hostTree={realHostTree ?? undefined}
+                                  onOpenTab={(host, type) => {
+                                    setRailViewActive(false);
+                                    openTab(host, type);
+                                  }}
+                                  onEditHost={editHostInManager}
+                                  onOpenLocalTerminal={openLocalTerminalTab}
+                                />
+                              ) : (
+                                <CredentialsTab />
+                              )}
+                            </Suspense>
+                          )}
+                        </>
+                      ) : railView === "settings" ? (
+                        <Suspense fallback={<SidebarPanelFallback />}>
+                          <SettingsTab
+                            sections={[
+                              {
+                                id: "user-profile",
+                                label: t("nav.userProfile"),
+                                node: renderRailPanels("user-profile"),
+                              },
+                              {
+                                id: "alerts",
+                                label: t("nav.alerts"),
+                                node: renderRailPanels("alerts"),
+                              },
+                              {
+                                id: "ssh-tools",
+                                label: t("nav.sshTools"),
+                                node: renderRailPanels("ssh-tools"),
+                              },
+                              ...(showMultiUserUI && isAdmin
+                                ? [
+                                    {
+                                      id: "admin-settings",
+                                      label: t("nav.admin"),
+                                      node: renderRailPanels("admin-settings"),
+                                    },
+                                  ]
+                                : []),
+                            ]}
+                          />
+                        </Suspense>
+                      ) : railView === "dashboard" ? (
+                        <Suspense fallback={<SidebarPanelFallback />}>
+                          <DashboardTab
+                            onOpenSingletonTab={openSingletonTab}
+                            onOpenTab={(host, type) => {
+                              setRailViewActive(false);
+                              openTab(host, type);
+                            }}
+                            isVisible
+                          />
+                        </Suspense>
+                      ) : (
+                        renderRailPanels(railView)
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -2045,7 +2237,10 @@ export function AppShell({
                   }}
                 >
                   {tabs.map((tab) => {
-                    const tabNode = getTabNode(tab.id, tab.type === "terminal");
+                    const tabNode = getTabNode(
+                      tab.id,
+                      tab.type === "terminal" || tab.type === "local-terminal",
+                    );
                     const paneIdx = isSplit ? paneTabIds.indexOf(tab.id) : -1;
                     const inPane = paneIdx !== -1;
                     const activeInline = !inPane && tab.id === activeTabId;
@@ -2098,6 +2293,18 @@ export function AppShell({
           </div>
         </div>
       </div>
+
+      {vaultMenuAnchor && (
+        <VaultTabMenu
+          anchor={vaultMenuAnchor}
+          railView={railView}
+          onSelect={(view) => {
+            handleRailClick(view);
+            setVaultMenuAnchor(null);
+          }}
+          onClose={() => setVaultMenuAnchor(null)}
+        />
+      )}
 
       {commandPaletteOpen && (
         <Suspense fallback={null}>

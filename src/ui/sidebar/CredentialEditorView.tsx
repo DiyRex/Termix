@@ -1,13 +1,29 @@
-import { useRef, useState } from "react";
+/**
+ * Credential ("key") editor.
+ *
+ * Laid out as grouped detail rows: identity, then the key material itself
+ * (private key / public key / certificate), then export. "Export to host"
+ * installs the public key into a host's authorized_keys via the existing
+ * credential-deploy endpoint.
+ */
+import { useEffect, useRef, useState } from "react";
+import type React from "react";
 import { useTranslation } from "react-i18next";
 import { copyToClipboard } from "@/lib/clipboard";
-import { Copy, Info, Lock, Upload, X } from "lucide-react";
+import { Copy, KeyRound, Send, Tag, Upload, User, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/button";
-import { Input } from "@/components/input";
 import { PasswordInput } from "@/components/password-input";
-import { SectionCard } from "@/components/section-card";
+import {
+  DetailActionBar,
+  DetailAddRow,
+  DetailGroup,
+  DetailInputRow,
+  DetailRow,
+  DetailSelectRow,
+  DetailTextareaRow,
+} from "@/components/detail-list";
 import {
   createCredential,
   generateKeyPair,
@@ -15,8 +31,11 @@ import {
   updateCredential,
   adminCreateUserCredential,
   adminUpdateUserCredential,
+  deployCredentialToHost,
+  getSSHHosts,
 } from "@/main-axios";
 import type { Credential } from "@/types/ui-types";
+import { sshHostToHost } from "./HostManagerData";
 import { FolderPathPicker } from "./FolderPathPicker";
 
 type CredentialWithCertificate = Credential & { certPublicKey?: string };
@@ -28,13 +47,23 @@ export function CredentialEditorView({
   onSave,
   adminTargetUserId,
   existingFolders = [],
+  saveRef,
+  onSavingChange,
+  showFooterSave = true,
 }: {
   credential: Credential | null;
+  /** Tab id from the manager's strip, or "all" to show every group at once
+   *  (used by the keychain inspector, which has no tab strip). */
   activeTab: string;
   onBack: () => void;
   onSave: (saved: Record<string, unknown>) => void;
   adminTargetUserId?: string;
   existingFolders?: string[];
+  // Containers that render their own save affordance (the inspector's header
+  // tick) take the handler through this ref and pass showFooterSave={false}.
+  saveRef?: React.MutableRefObject<(() => void) | null>;
+  onSavingChange?: (saving: boolean) => void;
+  showFooterSave?: boolean;
 }) {
   const [credForm, setCredForm] = useState(() => ({
     name: credential?.name ?? "",
@@ -57,6 +86,12 @@ export function CredentialEditorView({
   const { t } = useTranslation();
   const [generatingKey, setGeneratingKey] = useState(false);
   const [generatingPublicKey, setGeneratingPublicKey] = useState(false);
+  const [showCertificate, setShowCertificate] = useState(
+    !!(credential as CredentialWithCertificate | null)?.certPublicKey,
+  );
+  const [showPassword, setShowPassword] = useState(
+    credential?.type === "password" || !!credential?.password,
+  );
   const credFileInputRef = useRef<HTMLInputElement>(null);
   const certFileInputRef = useRef<HTMLInputElement>(null);
   const setCredField = <K extends keyof typeof credForm>(
@@ -64,6 +99,63 @@ export function CredentialEditorView({
     v: (typeof credForm)[K],
   ) => setCredForm((p) => ({ ...p, [k]: v }));
   const [saving, setSaving] = useState(false);
+
+  // Export targets. Loaded lazily so the keychain editor doesn't pull the host
+  // list on every open — only once the export row is used.
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportHosts, setExportHosts] = useState<
+    { id: string; name: string; ip: string }[]
+  >([]);
+  const [exportHostId, setExportHostId] = useState("");
+  const [exporting, setExporting] = useState(false);
+
+  useEffect(() => {
+    if (!exportOpen || exportHosts.length > 0) return;
+    getSSHHosts()
+      .then((raw) =>
+        setExportHosts(
+          raw.map(sshHostToHost).map((h) => ({
+            id: h.id,
+            name: h.name || h.ip,
+            ip: h.ip,
+          })),
+        ),
+      )
+      .catch(() => toast.error(t("hosts.failedToLoadHosts")));
+  }, [exportOpen, exportHosts.length, t]);
+
+  const handleExport = async () => {
+    if (!credential) {
+      toast.error(t("credentials.exportSaveFirst"));
+      return;
+    }
+    if (!exportHostId) return;
+    setExporting(true);
+    try {
+      await deployCredentialToHost(Number(credential.id), Number(exportHostId));
+      toast.success(t("hosts.keyDeployedSuccess"));
+      setExportOpen(false);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : null;
+      toast.error(msg || t("hosts.failedToDeployKey"));
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // Deliberately re-assigned on every render (no dep array): the handler closes
+  // over `credForm`, so a memoised version would save stale values.
+  useEffect(() => {
+    if (!saveRef) return;
+    saveRef.current = () => void handleSave();
+    return () => {
+      saveRef.current = null;
+    };
+  });
+
+  useEffect(() => {
+    onSavingChange?.(saving);
+  }, [saving, onSavingChange]);
 
   const handleSave = async () => {
     if (!credForm.name.trim()) {
@@ -132,51 +224,34 @@ export function CredentialEditorView({
 
   return (
     <div className="flex flex-col gap-3">
-      {activeTab === "general" && (
-        <SectionCard
-          title={t("hosts.basicInformation")}
-          icon={<Info className="size-3.5" />}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                {t("hosts.friendlyNameLabel")}
-              </label>
-              <Input
-                placeholder="e.g. Production SSH Key"
-                value={credForm.name}
-                onChange={(e) => setCredField("name", e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                {t("hosts.folder")}
-              </label>
-              <FolderPathPicker
-                value={credForm.folder}
-                onChange={(path) => setCredField("folder", path)}
-                folderPaths={existingFolders}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5 col-span-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                {t("hosts.descriptionLabel")}
-              </label>
-              <Input
-                placeholder="Optional details..."
-                value={credForm.description}
-                onChange={(e) => setCredField("description", e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5 col-span-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                {t("hosts.tags")}
-              </label>
-              <div className="flex flex-wrap items-center gap-1 min-h-9 px-2 py-1 border border-border bg-background focus-within:ring-1 focus-within:ring-ring">
+      {(activeTab === "general" || activeTab === "all") && (
+        <>
+          <DetailGroup title={t("credentials.identityGroup")}>
+            <DetailInputRow
+              placeholder={t("hosts.friendlyNameLabel")}
+              value={credForm.name}
+              onChange={(v) => setCredField("name", v)}
+            />
+            <DetailRow>
+              <div className="min-w-0 flex-1">
+                <FolderPathPicker
+                  value={credForm.folder}
+                  onChange={(path) => setCredField("folder", path)}
+                  folderPaths={existingFolders}
+                />
+              </div>
+            </DetailRow>
+            <DetailInputRow
+              placeholder={t("hosts.descriptionLabel")}
+              value={credForm.description}
+              onChange={(v) => setCredField("description", v)}
+            />
+            <DetailRow icon={<Tag />} className="flex-wrap py-1.5">
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
                 {credForm.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] bg-muted border border-border/60 text-foreground"
+                    className="flex items-center gap-0.5 rounded border border-border/60 bg-muted px-1.5 py-0.5 text-[10px] text-foreground"
                   >
                     {tag}
                     <button
@@ -187,14 +262,14 @@ export function CredentialEditorView({
                           credForm.tags.filter((tg) => tg !== tag),
                         )
                       }
-                      className="text-muted-foreground hover:text-destructive ml-0.5"
+                      className="ml-0.5 text-muted-foreground hover:text-destructive"
                     >
                       <X className="size-2.5" />
                     </button>
                   </span>
                 ))}
                 <input
-                  className="flex-1 min-w-16 text-xs bg-transparent outline-none placeholder:text-muted-foreground/50"
+                  className="min-w-16 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
                   placeholder={
                     credForm.tags.length === 0
                       ? t("hosts.addTagsPlaceholder")
@@ -222,175 +297,161 @@ export function CredentialEditorView({
                   }}
                 />
               </div>
-            </div>
-          </div>
-        </SectionCard>
+            </DetailRow>
+          </DetailGroup>
+        </>
       )}
 
-      {activeTab === "auth" && (
-        <SectionCard
-          title={t("hosts.authDetailsSection")}
-          icon={<Lock className="size-3.5" />}
-        >
-          <div className="flex flex-col gap-4 py-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                {t("hosts.username")}
-              </label>
-              <Input
-                placeholder="e.g. root or deploy"
-                value={credForm.username}
-                onChange={(e) => setCredField("username", e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                {t("hosts.password")} ({t("common.optional")})
-              </label>
-              <PasswordInput
-                className="h-8 text-xs pr-8"
-                placeholder="••••••••"
-                value={credForm.password}
-                onChange={(e) => setCredField("password", e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-4">
-              <div className="p-3 border border-border bg-muted/20">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
-                  {t("hosts.generateKeyPairTitle")}
-                </p>
-                <p className="text-[10px] text-muted-foreground mb-2">
-                  {t("hosts.generateKeyPairDescription")}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { label: "Ed25519", type: "ssh-ed25519" },
-                    {
-                      label: "ECDSA (nistp256)",
-                      type: "ecdsa-sha2-nistp256",
-                    },
-                    { label: "RSA (2048)", type: "ssh-rsa", bits: 2048 },
-                  ].map(({ label, type: keyType, bits }) => (
-                    <Button
-                      key={label}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-7 text-[10px] px-2"
-                      disabled={generatingKey}
-                      onClick={async () => {
-                        setGeneratingKey(true);
-                        try {
-                          const result = await generateKeyPair(
-                            keyType as
-                              | "ssh-ed25519"
-                              | "ssh-rsa"
-                              | "ecdsa-sha2-nistp256",
-                            bits,
-                            credForm.passphrase === "existing_key_password"
-                              ? undefined
-                              : credForm.passphrase || undefined,
-                          );
-                          if (result.success) {
-                            setCredField("value", result.privateKey);
-                            setCredField("publicKey", result.publicKey);
-                            toast.success(
-                              t("hosts.keyPairGenerated", { label }),
-                            );
-                          } else {
-                            toast.error(
-                              result.error ??
-                                t("hosts.failedToGenerateKeyPair"),
-                            );
-                          }
-                        } catch {
-                          toast.error(t("hosts.failedToGenerateKeyPair"));
-                        } finally {
-                          setGeneratingKey(false);
-                        }
-                      }}
-                    >
-                      {generatingKey
-                        ? t("hosts.generatingKey")
-                        : t("hosts.generateLabel", { label })}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                    {t("hosts.sshPrivateKey")}
-                  </label>
-                  <button
-                    type="button"
-                    className="text-[10px] text-accent-brand hover:text-accent-brand/80 flex items-center gap-1"
-                    onClick={() => credFileInputRef.current?.click()}
-                  >
-                    <Upload className="size-3" /> {t("hosts.uploadFileBtn")}
-                  </button>
-                </div>
-                <input
-                  ref={credFileInputRef}
-                  type="file"
-                  accept=".pem,.key,.ppk,.txt"
-                  className="hidden"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    const text = await file.text();
-                    setCredField("value", text.trim());
-                    e.target.value = "";
-                  }}
-                />
-                {credForm.value === "existing_key" && (
-                  <div className="px-3 py-2 text-[10px] border border-accent-brand/30 bg-accent-brand/5 text-accent-brand">
-                    {t("hosts.keySaved")} — {t("hosts.keyReplaceNotice")}
-                  </div>
-                )}
-                <textarea
-                  placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
-                  rows={8}
-                  value={
-                    credForm.value === "existing_key" ? "" : credForm.value
-                  }
-                  onChange={(e) => setCredField("value", e.target.value)}
-                  className="w-full px-3 py-2 text-[10px] bg-background border border-border text-foreground placeholder:text-muted-foreground resize-none outline-none focus:ring-1 focus:ring-ring font-mono"
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                  {t("hosts.keyPassphraseOptional")}
-                </label>
+      {(activeTab === "auth" || activeTab === "all") && (
+        <>
+          <DetailGroup title={t("credentials.credentialsGroup")}>
+            <DetailInputRow
+              icon={<User />}
+              placeholder={t("hosts.username")}
+              value={credForm.username}
+              onChange={(v) => setCredField("username", v)}
+            />
+            {showPassword || credForm.password ? (
+              <DetailRow icon={<KeyRound />}>
                 <PasswordInput
-                  className="h-8 text-xs pr-8"
-                  placeholder={
-                    credForm.passphrase === "existing_key_password"
-                      ? t("hosts.keyPassphraseSaved")
-                      : "••••••••"
-                  }
-                  value={
-                    credForm.passphrase === "existing_key_password"
-                      ? ""
-                      : credForm.passphrase
-                  }
-                  onFocus={() => {
-                    if (credForm.passphrase === "existing_key_password")
-                      setCredField("passphrase", "");
-                  }}
-                  onChange={(e) => setCredField("passphrase", e.target.value)}
+                  className="h-7 border-0 bg-transparent px-0 pr-8 text-sm shadow-none focus-visible:ring-0"
+                  placeholder={t("hosts.password")}
+                  value={credForm.password}
+                  onChange={(e) => setCredField("password", e.target.value)}
                 />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                    {t("hosts.sshPublicKeyOptional")}
-                  </label>
+              </DetailRow>
+            ) : (
+              <DetailAddRow
+                label={t("credentials.addPassword")}
+                onClick={() => setShowPassword(true)}
+              />
+            )}
+          </DetailGroup>
+
+          <DetailGroup
+            title={t("credentials.keyGroup")}
+            action={
+              <div className="flex flex-wrap items-center gap-1.5">
+                {[
+                  { label: "Ed25519", type: "ssh-ed25519" },
+                  { label: "ECDSA", type: "ecdsa-sha2-nistp256" },
+                  { label: "RSA", type: "ssh-rsa", bits: 2048 },
+                ].map(({ label, type: keyType, bits }) => (
                   <Button
+                    key={label}
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] px-2 border-accent-brand/40 text-accent-brand"
+                    className="h-6 px-2 text-[10px]"
+                    disabled={generatingKey}
+                    onClick={async () => {
+                      setGeneratingKey(true);
+                      try {
+                        const result = await generateKeyPair(
+                          keyType as
+                            | "ssh-ed25519"
+                            | "ssh-rsa"
+                            | "ecdsa-sha2-nistp256",
+                          bits,
+                          credForm.passphrase === "existing_key_password"
+                            ? undefined
+                            : credForm.passphrase || undefined,
+                        );
+                        if (result.success) {
+                          setCredField("value", result.privateKey);
+                          setCredField("publicKey", result.publicKey);
+                          toast.success(t("hosts.keyPairGenerated", { label }));
+                        } else {
+                          toast.error(
+                            result.error ?? t("hosts.failedToGenerateKeyPair"),
+                          );
+                        }
+                      } catch {
+                        toast.error(t("hosts.failedToGenerateKeyPair"));
+                      } finally {
+                        setGeneratingKey(false);
+                      }
+                    }}
+                  >
+                    {generatingKey
+                      ? t("hosts.generatingKey")
+                      : t("hosts.generateLabel", { label })}
+                  </Button>
+                ))}
+              </div>
+            }
+          >
+            <DetailTextareaRow
+              label={t("hosts.sshPrivateKey")}
+              mono
+              rows={8}
+              placeholder="-----BEGIN OPENSSH PRIVATE KEY-----"
+              value={credForm.value === "existing_key" ? "" : credForm.value}
+              onChange={(v) => setCredField("value", v)}
+              action={
+                <button
+                  type="button"
+                  className="flex items-center gap-1 text-[10px] text-accent-brand hover:text-accent-brand/80"
+                  onClick={() => credFileInputRef.current?.click()}
+                >
+                  <Upload className="size-3" /> {t("hosts.uploadFileBtn")}
+                </button>
+              }
+              note={
+                credForm.value === "existing_key" ? (
+                  <div className="rounded border border-accent-brand/30 bg-accent-brand/5 px-2 py-1 text-[10px] text-accent-brand">
+                    {t("hosts.keySaved")} — {t("hosts.keyReplaceNotice")}
+                  </div>
+                ) : undefined
+              }
+            />
+            <input
+              ref={credFileInputRef}
+              type="file"
+              accept=".pem,.key,.ppk,.txt"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const text = await file.text();
+                setCredField("value", text.trim());
+                e.target.value = "";
+              }}
+            />
+
+            <DetailRow icon={<KeyRound />}>
+              <PasswordInput
+                className="h-7 border-0 bg-transparent px-0 pr-8 text-sm shadow-none focus-visible:ring-0"
+                placeholder={
+                  credForm.passphrase === "existing_key_password"
+                    ? t("hosts.keyPassphraseSaved")
+                    : t("hosts.keyPassphraseOptional")
+                }
+                value={
+                  credForm.passphrase === "existing_key_password"
+                    ? ""
+                    : credForm.passphrase
+                }
+                onFocus={() => {
+                  if (credForm.passphrase === "existing_key_password")
+                    setCredField("passphrase", "");
+                }}
+                onChange={(e) => setCredField("passphrase", e.target.value)}
+              />
+            </DetailRow>
+
+            <DetailTextareaRow
+              label={t("hosts.sshPublicKeyOptional")}
+              mono
+              rows={3}
+              placeholder="ssh-rsa AAAAB3Nza..."
+              value={credForm.publicKey}
+              onChange={(v) => setCredField("publicKey", v)}
+              action={
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    className="text-[10px] text-accent-brand hover:text-accent-brand/80 disabled:opacity-40"
                     disabled={
                       !credForm.value ||
                       credForm.value === "existing_key" ||
@@ -421,55 +482,58 @@ export function CredentialEditorView({
                     {generatingPublicKey
                       ? t("hosts.generatingKey")
                       : t("hosts.generateFromPrivateKey")}
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-6 text-[10px] px-2"
+                    className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-40"
                     disabled={!credForm.publicKey}
                     onClick={() => {
                       copyToClipboard(credForm.publicKey ?? "");
                       toast.success(t("hosts.publicKeyCopied"));
                     }}
                   >
-                    <Copy className="size-3 mr-1" /> {t("common.copy")}
-                  </Button>
+                    <Copy className="size-3" /> {t("common.copy")}
+                  </button>
                 </div>
-                <textarea
-                  placeholder="ssh-rsa AAAAB3Nza..."
-                  rows={3}
-                  value={credForm.publicKey}
-                  onChange={(e) => setCredField("publicKey", e.target.value)}
-                  className="w-full px-3 py-2 text-[10px] bg-background border border-border text-foreground placeholder:text-muted-foreground resize-none outline-none focus:ring-1 focus:ring-ring font-mono"
+              }
+            />
+
+            {showCertificate || credForm.certPublicKey ? (
+              <>
+                <DetailTextareaRow
+                  label={t("credentials.caCertificate")}
+                  mono
+                  rows={2}
+                  placeholder={t("credentials.pasteOrUploadCert")}
+                  value={credForm.certPublicKey}
+                  onChange={(v) => setCredField("certPublicKey", v)}
+                  action={
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        className="flex items-center gap-1 text-[10px] text-accent-brand hover:text-accent-brand/80"
+                        onClick={() => certFileInputRef.current?.click()}
+                      >
+                        <Upload className="size-3" />{" "}
+                        {t("credentials.uploadCertFile")}
+                      </button>
+                      {credForm.certPublicKey && (
+                        <button
+                          type="button"
+                          className="text-[10px] text-destructive hover:text-destructive/80"
+                          onClick={() => setCredField("certPublicKey", "")}
+                        >
+                          {t("credentials.clearCert")}
+                        </button>
+                      )}
+                    </div>
+                  }
+                  note={
+                    <p className="text-[10px] text-muted-foreground">
+                      {t("credentials.caCertificateDescription")}
+                    </p>
+                  }
                 />
-              </div>
-              <div className="flex flex-col gap-1.5 p-3 border border-border bg-muted/20">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                    {t("credentials.caCertificate")}
-                  </label>
-                  {credForm.certPublicKey && (
-                    <button
-                      type="button"
-                      className="text-[10px] text-destructive hover:text-destructive/80"
-                      onClick={() => setCredField("certPublicKey", "")}
-                    >
-                      {t("credentials.clearCert")}
-                    </button>
-                  )}
-                </div>
-                <p className="text-[10px] text-muted-foreground">
-                  {t("credentials.caCertificateDescription")}
-                </p>
-                <button
-                  type="button"
-                  className="text-[10px] text-accent-brand hover:text-accent-brand/80 flex items-center gap-1 self-start"
-                  onClick={() => certFileInputRef.current?.click()}
-                >
-                  <Upload className="size-3" />{" "}
-                  {t("credentials.uploadCertFile")}
-                </button>
                 <input
                   ref={certFileInputRef}
                   type="file"
@@ -483,38 +547,90 @@ export function CredentialEditorView({
                     e.target.value = "";
                   }}
                 />
-                <textarea
-                  placeholder={t("credentials.pasteOrUploadCert")}
-                  rows={2}
-                  value={credForm.certPublicKey}
-                  onChange={(e) =>
-                    setCredField("certPublicKey", e.target.value)
-                  }
-                  className="w-full px-3 py-2 text-[10px] bg-background border border-border text-foreground placeholder:text-muted-foreground resize-none outline-none focus:ring-1 focus:ring-ring font-mono"
-                />
-              </div>
-            </div>
-          </div>
-        </SectionCard>
+              </>
+            ) : (
+              <DetailAddRow
+                label={t("credentials.addCertificate")}
+                onClick={() => setShowCertificate(true)}
+              />
+            )}
+          </DetailGroup>
+
+          {/* Key export ------------------------------------------------- */}
+          <DetailGroup title={t("credentials.keyExportGroup")}>
+            <p className="px-0.5 text-xs text-muted-foreground">
+              {t("credentials.keyExportDescription")}
+            </p>
+            {exportOpen && (
+              <DetailSelectRow
+                value={exportHostId}
+                onChange={setExportHostId}
+                disabled={exportHosts.length === 0}
+              >
+                <option value="">
+                  {exportHosts.length === 0
+                    ? t("credentials.exportLoadingHosts")
+                    : t("hosts.selectAServer")}
+                </option>
+                {exportHosts.map((h) => (
+                  <option key={h.id} value={h.id}>
+                    {h.name} ({h.ip})
+                  </option>
+                ))}
+              </DetailSelectRow>
+            )}
+            <Button
+              className="h-11 w-full bg-emerald-600 text-sm font-semibold text-white hover:bg-emerald-500"
+              disabled={
+                !credential ||
+                exporting ||
+                (exportOpen && !exportHostId) ||
+                !credForm.publicKey
+              }
+              title={
+                !credential
+                  ? t("credentials.exportSaveFirst")
+                  : !credForm.publicKey
+                    ? t("credentials.noPublicKeyAvailable")
+                    : undefined
+              }
+              onClick={() =>
+                exportOpen ? handleExport() : setExportOpen(true)
+              }
+            >
+              <Send className="mr-2 size-4" />
+              {exporting
+                ? t("hosts.deployingBtn")
+                : t("credentials.exportToHost")}
+            </Button>
+          </DetailGroup>
+        </>
       )}
 
-      <div className="flex justify-end gap-3 mt-3">
-        <Button variant="ghost" onClick={onBack} disabled={saving}>
-          {t("hosts.cancelBtn")}
-        </Button>
-        <Button
-          variant="outline"
-          className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 hover:text-accent-brand px-8"
-          onClick={handleSave}
-          disabled={saving}
-        >
-          {saving
-            ? t("hosts.savingBtn")
-            : credential
-              ? t("hosts.updateCredentialBtn")
-              : t("hosts.addCredentialBtn")}
-        </Button>
-      </div>
+      {showFooterSave && (
+        <DetailActionBar>
+          <Button
+            variant="outline"
+            className="w-full border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 hover:text-accent-brand"
+            onClick={handleSave}
+            disabled={saving}
+          >
+            {saving
+              ? t("hosts.savingBtn")
+              : credential
+                ? t("hosts.updateCredentialBtn")
+                : t("hosts.addCredentialBtn")}
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full"
+            onClick={onBack}
+            disabled={saving}
+          >
+            {t("hosts.cancelBtn")}
+          </Button>
+        </DetailActionBar>
+      )}
     </div>
   );
 }

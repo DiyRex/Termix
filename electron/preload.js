@@ -81,4 +81,9 @@ contextBridge.exposeInMainWorld("electronClipboard", {
   readText: () => ipcRenderer.invoke("clipboard-read-text"),
 });
 
+// Platform, straight from the main process. The renderer needs it to lay the
+// tab strip out around the macOS traffic lights, and user-agent sniffing for
+// that is guesswork.
+contextBridge.exposeInMainWorld("termixPlatform", process.platform);
+
 window.IS_ELECTRON = true;

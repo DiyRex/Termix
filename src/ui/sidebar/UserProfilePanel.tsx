@@ -161,7 +161,7 @@ function AccordionSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border border-border bg-card overflow-hidden">
+    <div className="rounded-lg border border-border bg-card overflow-hidden">
       <button
         onClick={onToggle}
         aria-expanded={open}
@@ -1305,11 +1305,11 @@ export function UserProfilePanel({
           connected; with no sync there's nowhere for "cloud" to sync to,
           so this stays forced to local storage and hidden. */}
       {(!isElectron() || isRemoteSyncConnected) && (
-        <div className="border border-border bg-card px-3 py-2.5 flex flex-col gap-2">
+        <div className="rounded-lg border border-border bg-card px-3 py-2.5 flex flex-col gap-2">
           <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
             {t("newUi.sidebar.userProfile.storageModeSwitch")}
           </span>
-          <div className="flex border border-border overflow-hidden w-full">
+          <div className="flex rounded-full border border-border overflow-hidden w-full">
             <button
               onClick={() => handleStorageModeChange("local")}
               className={`flex-1 py-1 text-[10px] font-bold uppercase tracking-widest transition-colors ${
@@ -1527,7 +1527,7 @@ export function UserProfilePanel({
               <select
                 value={theme}
                 onChange={(e) => handleThemeChange(e.target.value as ThemeId)}
-                className="w-full px-2.5 py-1.5 text-xs bg-background border border-border text-foreground outline-none focus:ring-1 focus:ring-ring appearance-none pr-7"
+                className="w-full rounded-full px-3 py-1.5 text-xs bg-background border border-border text-foreground outline-none focus:ring-1 focus:ring-ring appearance-none pr-7"
               >
                 {THEMES.map((th) => (
                   <option key={th.id} value={th.id}>
@@ -1543,7 +1543,7 @@ export function UserProfilePanel({
                   key={th.id}
                   title={themeLabel[th.id]}
                   onClick={() => handleThemeChange(th.id)}
-                  className={`h-4 flex-1 border transition-all ${theme === th.id ? "border-accent-brand ring-1 ring-accent-brand" : "border-border/50"}`}
+                  className={`h-4 flex-1 rounded-full border transition-all ${theme === th.id ? "border-accent-brand ring-1 ring-accent-brand" : "border-border/50"}`}
                   style={{ background: th.preview }}
                 />
               ))}
@@ -1560,7 +1560,7 @@ export function UserProfilePanel({
                 <button
                   key={fs.id}
                   onClick={() => handleFontSizeChange(fs.id)}
-                  className={`flex-1 py-1.5 border text-[10px] font-bold transition-colors ${
+                  className={`flex-1 rounded-full py-1.5 border text-[10px] font-bold transition-colors ${
                     fontSize === fs.id
                       ? "border-accent-brand/40 bg-accent-brand/10 text-accent-brand"
                       : "border-border text-muted-foreground hover:text-foreground"
@@ -1582,7 +1582,7 @@ export function UserProfilePanel({
                   key={ac.value}
                   title={ac.label}
                   onClick={() => handleAccentChange(ac.value)}
-                  className={`h-6 border-2 transition-all ${
+                  className={`h-6 rounded-full border-2 transition-all ${
                     accentColor === ac.value
                       ? "border-foreground scale-110"
                       : "border-transparent hover:border-foreground/40"
@@ -1591,10 +1591,10 @@ export function UserProfilePanel({
                 />
               ))}
             </div>
-            <div className="flex items-center gap-2 border border-border bg-muted/30 px-2 py-1.5">
+            <div className="flex items-center gap-2 rounded-full border border-border bg-muted/30 px-2 py-1.5">
               <button
                 onClick={() => colorInputRef.current?.click()}
-                className="size-5 shrink-0 border border-border/60 cursor-pointer"
+                className="size-5 shrink-0 rounded-full border border-border/60 cursor-pointer"
                 style={{ background: accentColor }}
                 title={t("newUi.sidebar.userProfile.colorPickerTooltip")}
               />
@@ -2068,7 +2068,7 @@ export function UserProfilePanel({
 
             {/* Disable TOTP form */}
             {totpEnabled && showDisableTotp && (
-              <div className="border border-border bg-muted/20 p-3 flex flex-col gap-3">
+              <div className="rounded-lg border border-border bg-muted/20 p-3 flex flex-col gap-3">
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   {t("newUi.sidebar.userProfile.totpDisableTitle")}
                 </span>
@@ -2107,7 +2107,7 @@ export function UserProfilePanel({
 
             {/* TOTP setup: scan QR */}
             {!totpEnabled && totpStep === "setup" && (
-              <div className="border border-border bg-muted/20 p-3 flex flex-col gap-3">
+              <div className="rounded-lg border border-border bg-muted/20 p-3 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                     {t("newUi.sidebar.userProfile.setupTotp")}
@@ -2164,7 +2164,7 @@ export function UserProfilePanel({
 
             {/* TOTP setup: verify code */}
             {!totpEnabled && totpStep === "verify" && (
-              <div className="border border-border bg-muted/20 p-3 flex flex-col gap-3">
+              <div className="rounded-lg border border-border bg-muted/20 p-3 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                     {t("newUi.sidebar.userProfile.totpVerifyTitle")}
@@ -2213,7 +2213,7 @@ export function UserProfilePanel({
 
             {/* TOTP setup: backup codes */}
             {totpStep === "backup" && totpBackupCodes.length > 0 && (
-              <div className="border border-border bg-muted/20 p-3 flex flex-col gap-3">
+              <div className="rounded-lg border border-border bg-muted/20 p-3 flex flex-col gap-3">
                 <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                   {t("newUi.sidebar.userProfile.totpBackupTitle")}
                 </span>

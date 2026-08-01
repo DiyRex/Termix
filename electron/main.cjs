@@ -1106,6 +1106,29 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     title: "Termix",
+    // The tab strip is the title bar, so the native one is hidden and the
+    // traffic lights are positioned to sit inside it. Linux keeps its frame:
+    // hiding it there removes the window controls with nothing to replace them.
+    ...(process.platform === "darwin"
+      ? {
+          // "hidden", not "hiddenInset": trafficLightPosition is only honoured
+          // for the former. With hiddenInset macOS imposes its own placement and
+          // the buttons land wherever it likes, which is how they ended up on
+          // top of the first tab.
+          titleBarStyle: "hidden",
+          // Vertically centred in the 50px tab strip (14px tall buttons).
+          trafficLightPosition: { x: 20, y: 18 },
+        }
+      : process.platform === "win32"
+        ? {
+            titleBarStyle: "hidden",
+            titleBarOverlay: {
+              color: "#00000000",
+              symbolColor: "#9ca3af",
+              height: 50,
+            },
+          }
+        : {}),
     icon: path.join(
       appRoot,
       "public",
@@ -2788,6 +2811,121 @@ ipcMain.handle("clipboard-write-text", (_event, text) => {
 });
 
 ipcMain.handle("clipboard-read-text", () => clipboard.readText());
+
+// ── Local filesystem, for the SFTP tab's local pane ──────────────────────────
+// Handled here rather than in the backend on purpose: the backend is shared with
+// the hosted/Docker deployments, where its disk is someone else's server. Main
+// only ever runs on the user's own machine, already has `fs`, and needs no new
+// port, auth path or desktop-only gate to keep straight.
+
+/** Renders a stat mode the way `ls -l` does, e.g. "drwxr-xr-x". */
+function formatFileMode(mode, isDir, isLink) {
+  const bits = ["r", "w", "x"];
+  let out = isLink ? "l" : isDir ? "d" : "-";
+  for (let shift = 6; shift >= 0; shift -= 3) {
+    const group = (mode >> shift) & 0o7;
+    for (let i = 0; i < 3; i++) {
+      out += group & (0b100 >> i) ? bits[i] : "-";
+    }
+  }
+  return out;
+}
+
+ipcMain.handle("local-fs:home", () => ({
+  path: os.homedir(),
+  separator: path.sep,
+}));
+
+ipcMain.handle("local-fs:list", async (_event, requestedPath) => {
+  // Resolved so "..", relative segments and trailing separators collapse to one
+  // canonical path before touching the filesystem.
+  const dir = path.resolve(
+    typeof requestedPath === "string" && requestedPath
+      ? requestedPath
+      : os.homedir(),
+  );
+
+  try {
+    const stat = await fs.promises.stat(dir);
+    if (!stat.isDirectory()) return { error: "Not a directory" };
+
+    const dirents = await fs.promises.readdir(dir, { withFileTypes: true });
+    const entries = [];
+
+    for (const dirent of dirents) {
+      const full = path.join(dir, dirent.name);
+      let size = null;
+      let modified = null;
+      let mode = 0;
+      try {
+        // lstat, not stat: a broken symlink must still list rather than take
+        // down the whole directory read.
+        const st = await fs.promises.lstat(full);
+        size = st.isDirectory() ? null : st.size;
+        modified = st.mtime.toISOString();
+        mode = st.mode;
+      } catch {
+        // Unreadable entry — still worth showing, just without metadata.
+      }
+
+      entries.push({
+        name: dirent.name,
+        path: full,
+        type: dirent.isSymbolicLink()
+          ? "symlink"
+          : dirent.isDirectory()
+            ? "directory"
+            : "file",
+        size,
+        modified,
+        mode: formatFileMode(
+          mode,
+          dirent.isDirectory(),
+          dirent.isSymbolicLink(),
+        ),
+      });
+    }
+
+    // Directories first, then case-insensitive by name.
+    entries.sort((a, b) => {
+      const aDir = a.type === "directory";
+      const bDir = b.type === "directory";
+      if (aDir !== bDir) return aDir ? -1 : 1;
+      return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+    });
+
+    return {
+      path: dir,
+      parent: path.dirname(dir) === dir ? null : path.dirname(dir),
+      entries,
+    };
+  } catch (err) {
+    return { error: err?.message || "Failed to list directory" };
+  }
+});
+
+ipcMain.handle("local-fs:mkdir", async (_event, target) => {
+  if (typeof target !== "string" || !target)
+    return { error: "path is required" };
+  try {
+    await fs.promises.mkdir(path.resolve(target));
+    return { ok: true };
+  } catch (err) {
+    return { error: err?.message || "Failed to create directory" };
+  }
+});
+
+ipcMain.handle("local-fs:rename", async (_event, from, to) => {
+  if (typeof from !== "string" || typeof to !== "string" || !from || !to) {
+    return { error: "from and to are required" };
+  }
+  try {
+    await fs.promises.rename(path.resolve(from), path.resolve(to));
+    return { ok: true };
+  } catch (err) {
+    return { error: err?.message || "Failed to rename" };
+  }
+});
 
 ipcMain.handle("show-save-dialog", async (_event, options) => {
   return dialog.showSaveDialog(mainWindow, options || {});

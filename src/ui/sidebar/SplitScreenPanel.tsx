@@ -241,7 +241,7 @@ export function SplitScreenPanel({
                             {tabs
                               .filter(
                                 (tab) =>
-                                  tab.type !== "dashboard" &&
+                                  tab.type !== "vaults" &&
                                   !paneTabIds.includes(tab.id),
                               )
                               .map((tab) => (
@@ -261,7 +261,7 @@ export function SplitScreenPanel({
                               ))}
                             {tabs.filter(
                               (tab) =>
-                                tab.type !== "dashboard" &&
+                                tab.type !== "vaults" &&
                                 !paneTabIds.includes(tab.id),
                             ).length === 0 && (
                               <div className="px-2 py-2 text-xs text-muted-foreground/60">

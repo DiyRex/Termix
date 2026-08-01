@@ -293,7 +293,7 @@ function PaneHeader({
           <span
             className={`truncate ${isFocused ? "text-accent-brand font-semibold" : "text-foreground"}`}
           >
-            {tab.type === "dashboard" ? "Dashboard" : tab.label}
+            {tab.label}
           </span>
         </>
       ) : (

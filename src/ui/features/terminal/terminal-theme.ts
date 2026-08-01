@@ -19,6 +19,37 @@ const TERMIX_DEFAULT_COLORS: Record<
   termius: { background: "#0f1520", foreground: "#eef2f7" },
 };
 
+/**
+ * Theme used by any terminal surface that has no theme of its own — the serial
+ * and Docker consoles, and SSH hosts saved before a theme was chosen.
+ *
+ * Stored client-side, mirroring the existing per-host `terminal_theme_host_*`
+ * override, so local and remote consoles stay in step without a round trip.
+ * Set it to any key of TERMINAL_THEMES; an unknown value falls back to Termix.
+ */
+const DEFAULT_TERMINAL_THEME_KEY = "terminal_theme_default";
+const BUILT_IN_DEFAULT_TERMINAL_THEME = "phosphorGreen";
+
+export function getDefaultTerminalTheme(): string {
+  try {
+    const stored = localStorage.getItem(DEFAULT_TERMINAL_THEME_KEY);
+    if (stored && (stored === "termix" || TERMINAL_THEMES[stored])) {
+      return stored;
+    }
+  } catch {
+    // Private-mode / storage-disabled browsers: fall through to the built-in.
+  }
+  return BUILT_IN_DEFAULT_TERMINAL_THEME;
+}
+
+export function setDefaultTerminalTheme(theme: string): void {
+  try {
+    localStorage.setItem(DEFAULT_TERMINAL_THEME_KEY, theme);
+  } catch {
+    // Nothing to do — the built-in default keeps applying.
+  }
+}
+
 export function resolveTermixThemeColors(
   activeTheme: string,
   appTheme: string,

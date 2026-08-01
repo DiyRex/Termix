@@ -33,6 +33,8 @@ export type Host = {
   keyPassword?: string;
   keyType?: string;
   notes?: string;
+  /** Platform badge id shown beside the address (see HOST_OS_OPTIONS). */
+  osIcon?: string;
   macAddress?: string;
   wolBroadcastAddress?: string;
   pin?: boolean;
@@ -54,6 +56,8 @@ export type Host = {
     fastScrollSensitivity: number;
     minimumContrastRatio: number;
     backspaceMode: "normal" | "control-h";
+    /** Session encoding, e.g. "UTF-8". Absent means UTF-8. */
+    charset?: string;
     agentForwarding: boolean;
     autoMosh: boolean;
     moshCommand: string;
@@ -229,6 +233,11 @@ export type HostFolder = {
 };
 
 export type TabType =
+  // The pinned first tab. It owns the vault chrome (navigation rail + the
+  // active rail destination); every other tab is a full-window session.
+  | "vaults"
+  // The pinned SFTP tab: local filesystem beside a remote host.
+  | "sftp"
   | "dashboard"
   | "hosts"
   | "credentials"
@@ -243,6 +252,8 @@ export type TabType =
   | "history"
   | "split-screen"
   | "terminal"
+  // A shell on the machine running the app, with no host and no SSH.
+  | "local-terminal"
   | "rdp"
   | "vnc"
   | "telnet"

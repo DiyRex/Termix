@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { KeyRound, Lock, Plus, Search, FolderTree, User } from "lucide-react";
 import { Button } from "@/components/button.tsx";
 import { Input } from "@/components/input.tsx";
 import { getCredentials } from "@/api/credentials-api";
 import { sshLogger } from "@/lib/frontend-logger";
+import { CredentialInspector } from "./CredentialInspector";
 
 /**
  * Keychain browsed as a card grid, matching the host grid.
@@ -53,32 +54,50 @@ function subtitleFor(
   return `${t("credentials.typeLabel")} ${pretty.toUpperCase()}`;
 }
 
-export function CredentialsTab({
-  onAddCredential,
-}: {
-  onAddCredential?: () => void;
-}) {
+export function CredentialsTab() {
   const { t } = useTranslation();
   const [creds, setCreds] = useState<CredentialSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  // null + open = "new credential"; a number = editing that credential.
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [inspectorOpen, setInspectorOpen] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      const data = await getCredentials();
+      const list = Array.isArray(data) ? data : [];
+      setCreds(list.map(toSummary));
+    } catch (err) {
+      sshLogger.error("Failed to load credentials for keychain grid", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    getCredentials()
-      .then((data) => {
-        if (cancelled) return;
-        const list = Array.isArray(data) ? data : [];
-        setCreds(list.map(toSummary));
-      })
-      .catch((err) => {
-        sshLogger.error("Failed to load credentials for keychain grid", err);
-      })
-      .finally(() => !cancelled && setLoading(false));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    void load();
+  }, [load]);
+
+  useEffect(() => {
+    const refresh = () => void load();
+    window.addEventListener("termix:credentials-changed", refresh);
+    return () =>
+      window.removeEventListener("termix:credentials-changed", refresh);
+  }, [load]);
+
+  const folders = useMemo(
+    () =>
+      [
+        ...new Set(creds.map((c) => c.folder).filter((f): f is string => !!f)),
+      ].sort(),
+    [creds],
+  );
+
+  const openCredential = (id: number | null) => {
+    setSelectedId(id);
+    setInspectorOpen(true);
+  };
 
   const keys = useMemo(
     () => creds.filter((c) => c.authType !== "password"),
@@ -102,8 +121,15 @@ export function CredentialsTab({
 
   function Card({ cred }: { cred: CredentialSummary }) {
     const isKey = cred.authType !== "password";
+    const isSelected = inspectorOpen && selectedId === cred.id;
     return (
-      <div className="flex items-center gap-3 rounded-xl bg-card p-3 shadow-sm transition-colors hover:bg-muted/50">
+      <button
+        type="button"
+        onClick={() => openCredential(cred.id)}
+        className={`flex items-center gap-3 rounded-xl bg-card p-3 text-left shadow-sm transition-colors ${
+          isSelected ? "ring-1 ring-accent-brand" : "hover:bg-muted/50"
+        }`}
+      >
         <span
           className={`flex size-9 shrink-0 items-center justify-center rounded-md ${
             isKey
@@ -132,7 +158,7 @@ export function CredentialsTab({
             {cred.folder}
           </span>
         )}
-      </div>
+      </button>
     );
   }
 
@@ -159,54 +185,68 @@ export function CredentialsTab({
   }
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col">
-      <div className="flex shrink-0 items-center gap-2 px-4 pt-4">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("credentials.searchPlaceholder")}
-            className="h-10 rounded-lg bg-surface pl-9"
-          />
+    <div className="flex h-full min-h-0 w-full">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex shrink-0 items-center gap-2 px-4 pt-4">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t("credentials.searchPlaceholder")}
+              className="h-10 rounded-lg bg-surface pl-9"
+            />
+          </div>
+          <Button size="lg" onClick={() => openCredential(null)}>
+            <Plus className="size-4" />
+            {t("credentials.add")}
+          </Button>
         </div>
-        <Button size="lg" onClick={onAddCredential}>
-          <Plus className="size-4" />
-          {t("credentials.add")}
-        </Button>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-4 pb-6">
+          {loading ? (
+            <p className="px-1 py-8 text-sm text-muted-foreground">
+              {t("common.loading")}
+            </p>
+          ) : creds.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-16">
+              <User className="size-8 text-muted-foreground/50" />
+              <p className="text-sm text-muted-foreground">
+                {t("credentials.empty")}
+              </p>
+              <Button variant="outline" onClick={() => openCredential(null)}>
+                <Plus className="size-4" />
+                {t("credentials.add")}
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Section title={t("credentials.keys")} items={filteredKeys} />
+              <Section
+                title={t("credentials.passwords")}
+                items={filteredPasswords}
+              />
+              {filteredKeys.length === 0 && filteredPasswords.length === 0 && (
+                <p className="px-1 py-8 text-sm text-muted-foreground">
+                  {t("credentials.noMatches")}
+                </p>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-4 pb-6">
-        {loading ? (
-          <p className="px-1 py-8 text-sm text-muted-foreground">
-            {t("common.loading")}
-          </p>
-        ) : creds.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-16">
-            <User className="size-8 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">
-              {t("credentials.empty")}
-            </p>
-            <Button variant="outline" onClick={onAddCredential}>
-              <Plus className="size-4" />
-              {t("credentials.add")}
-            </Button>
-          </div>
-        ) : (
-          <>
-            <Section title={t("credentials.keys")} items={filteredKeys} />
-            <Section
-              title={t("credentials.passwords")}
-              items={filteredPasswords}
-            />
-            {filteredKeys.length === 0 && filteredPasswords.length === 0 && (
-              <p className="px-1 py-8 text-sm text-muted-foreground">
-                {t("credentials.noMatches")}
-              </p>
-            )}
-          </>
-        )}
-      </div>
+      {inspectorOpen && (
+        <CredentialInspector
+          credentialId={selectedId}
+          existingFolders={folders}
+          onClose={() => setInspectorOpen(false)}
+          onSaved={() => {
+            setInspectorOpen(false);
+            void load();
+          }}
+        />
+      )}
     </div>
   );
 }

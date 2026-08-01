@@ -616,6 +616,37 @@ export const TERMINAL_THEMES: Record<string, TerminalTheme> = {
     },
   },
 
+  phosphorGreen: {
+    name: "Phosphor Green",
+    category: "dark",
+    colors: {
+      background: "#000000",
+      foreground: "#33ff33",
+      cursor: "#33ff33",
+      cursorAccent: "#000000",
+      selectionBackground: "#1f5c1f",
+      black: "#0a0a0a",
+      // Hues are kept distinguishable rather than mapped to pure green shades:
+      // a fully monochrome ramp makes diffs, log levels and ls output
+      // unreadable. White is green-tinted so ordinary output still reads green.
+      red: "#ff5f56",
+      green: "#33ff33",
+      yellow: "#eaff5f",
+      blue: "#4dd2ff",
+      magenta: "#b58cff",
+      cyan: "#5ffbf1",
+      white: "#c8ffc8",
+      brightBlack: "#2f5f2f",
+      brightRed: "#ff8079",
+      brightGreen: "#6bff6b",
+      brightYellow: "#f6ff8f",
+      brightBlue: "#84e2ff",
+      brightMagenta: "#ceb0ff",
+      brightCyan: "#9dfff9",
+      brightWhite: "#e6ffe6",
+    },
+  },
+
   snazzy: {
     name: "Snazzy",
     category: "dark",

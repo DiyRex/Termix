@@ -5,6 +5,24 @@ import type { HostDefaults } from "@/api/settings-api";
 
 type HostSocks5ProxyNode = NonNullable<Host["socks5ProxyChain"]>[number];
 
+/**
+ * Encodings offered for the terminal session. UTF-8 covers virtually every
+ * modern host; the rest are here for legacy appliances that still speak a
+ * single-byte codepage.
+ */
+export const TERMINAL_CHARSETS = [
+  "UTF-8",
+  "ISO-8859-1",
+  "ISO-8859-15",
+  "Windows-1252",
+  "KOI8-R",
+  "GBK",
+  "Big5",
+  "Shift_JIS",
+  "EUC-JP",
+  "EUC-KR",
+] as const;
+
 export type HostProtocols = {
   enableSsh: boolean;
   enableRdp: boolean;
@@ -62,6 +80,7 @@ export function createHostEditorForm(
   return {
     name: host?.name ?? "",
     ip: host?.ip ?? "",
+    osIcon: host?.osIcon ?? "",
     username: host?.username ?? (host ? "" : "root"),
     sshPort: host?.sshPort ?? host?.port ?? 22,
     rdpPort: host?.rdpPort ?? 3389,
@@ -154,6 +173,7 @@ export function createHostEditorForm(
     backspaceMode: (host?.terminalConfig?.backspaceMode ?? "normal") as
       | "normal"
       | "control-h",
+    charset: host?.terminalConfig?.charset ?? "UTF-8",
     startupSnippetId: host?.terminalConfig?.startupSnippetId ?? null,
     moshCommand: host?.terminalConfig?.moshCommand ?? "",
     agentForwarding: host?.terminalConfig?.agentForwarding ?? false,
@@ -275,6 +295,7 @@ export function buildHostEditorPayload(
           : "telnet",
     name: form.name,
     ip: form.ip,
+    osIcon: form.osIcon || null,
     port: protocols.enableSsh
       ? Number(form.sshPort)
       : protocols.enableRdp
@@ -425,6 +446,7 @@ export function buildHostEditorPayload(
           fastScrollSensitivity: Number(form.fastScrollSensitivity),
           minimumContrastRatio: Number(form.minimumContrastRatio),
           backspaceMode: form.backspaceMode,
+          charset: form.charset,
           startupSnippetId: form.startupSnippetId ?? null,
           moshCommand: form.moshCommand || null,
           agentForwarding: form.agentForwarding,

@@ -209,6 +209,7 @@ async function provisionLocalDesktopUserIfNeeded(): Promise<void> {
     await import("./hosts/docker/console.js");
     await import("./hosts/tmux/index.js");
     await import("./hosts/serial.js");
+    await import("./hosts/local-terminal.js");
     await import("./services/dashboard.js");
     await import("./services/homepage.js");
 

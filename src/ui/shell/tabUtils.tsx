@@ -13,6 +13,8 @@ import {
   User,
   Activity,
   TerminalSquare,
+  Vault,
+  FolderClosed,
   Layers, // --- tmux-monitor ---
 } from "lucide-react";
 import { lazy, Suspense } from "react";
@@ -23,6 +25,7 @@ import type {
   TerminalHostConfig,
 } from "@/features/terminal/Terminal";
 import type { GuacamoleAppHandle } from "@/features/guacamole/GuacamoleApp";
+import type { LocalTerminalHandle } from "@/features/terminal/LocalTerminal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Tab, TabType, Host, HostFolder } from "@/types/ui-types";
 import type { SSHHost } from "@/types";
@@ -99,6 +102,16 @@ const Serial = lazy(() =>
     default: m.Serial,
   })),
 );
+const SftpTab = lazy(() =>
+  import("@/features/file-manager/SftpTab").then((m) => ({
+    default: m.SftpTab,
+  })),
+);
+const LocalTerminal = lazy(() =>
+  import("@/features/terminal/LocalTerminal").then((m) => ({
+    default: m.LocalTerminal,
+  })),
+);
 
 function hostToSSHHost(h: Host): SSHHost {
   return {
@@ -169,10 +182,16 @@ function withTabSuspense(node: React.ReactNode) {
 
 export function tabIcon(type: TabType) {
   switch (type) {
+    case "vaults":
+      return <Vault className="size-3.5" />;
     case "dashboard":
       return <LayoutDashboard className="size-3.5" />;
     case "terminal":
       return <Terminal className="size-3.5" />;
+    case "local-terminal":
+      return <TerminalSquare className="size-3.5" />;
+    case "sftp":
+      return <FolderClosed className="size-3.5" />;
     case "rdp":
       return <Monitor className="size-3.5" />;
     case "vnc":
@@ -291,6 +310,33 @@ export function renderTabContent(
   const { host, label } = tab;
 
   switch (tab.type) {
+    // Chrome, not content: the navigation rail and its active destination are
+    // rendered by AppShell on top of this slot.
+    case "vaults":
+      return null;
+
+    case "sftp":
+      return withTabSuspense(
+        <SftpTab
+          isVisible={isVisible}
+          hostToSSHHost={hostToSSHHost}
+          hostTree={hostTree}
+        />,
+      );
+
+    case "local-terminal":
+      return withTabSuspense(
+        <LocalTerminal
+          ref={tab.terminalRef as React.Ref<LocalTerminalHandle>}
+          instanceId={tab.instanceId}
+          isVisible={isVisible}
+          onClose={() => onCloseTab?.(tab.id)}
+          onTitleChange={
+            onRenameTab ? (title) => onRenameTab(tab.id, title) : undefined
+          }
+        />,
+      );
+
     case "hosts":
       return withTabSuspense(
         <HostsTab

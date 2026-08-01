@@ -4,6 +4,7 @@ import {
   useCallback,
   forwardRef,
   useImperativeHandle,
+  useMemo,
 } from "react";
 import { useXTerm } from "react-xtermjs";
 import { FitAddon } from "@xterm/addon-fit";
@@ -11,7 +12,10 @@ import { useTranslation } from "react-i18next";
 import { TriangleAlert } from "lucide-react";
 import { isElectron } from "@/lib/electron";
 import { useTheme } from "@/components/theme-provider";
-import { resolveTermixThemeColors } from "@/features/terminal/terminal-theme";
+import {
+  getDefaultTerminalTheme,
+  resolveTermixThemeColors,
+} from "@/features/terminal/terminal-theme";
 import { DEFAULT_TERMINAL_CONFIG, TERMINAL_FONTS } from "@/lib/terminal-themes";
 import { ensureTerminalFontsLoaded } from "@/features/terminal/terminal-global-styles";
 import type { SerialConfig } from "@/types/ui-types";
@@ -61,9 +65,14 @@ export const Serial = forwardRef<SerialHandle, SerialProps>(function Serial(
 
   // ── Theme sync ─────────────────────────────────────────────────────────
 
+  const serialThemeColors = useMemo(
+    () => resolveTermixThemeColors(getDefaultTerminalTheme(), appTheme),
+    [appTheme],
+  ) as Record<string, string | undefined>;
+
   useEffect(() => {
     if (!terminal) return;
-    const themeColors = resolveTermixThemeColors("termix", appTheme);
+    const themeColors = serialThemeColors;
     const fontConfig = TERMINAL_FONTS.find(
       (f) => f.value === DEFAULT_TERMINAL_CONFIG.fontFamily,
     );
@@ -95,7 +104,7 @@ export const Serial = forwardRef<SerialHandle, SerialProps>(function Serial(
     terminal.options.fontFamily =
       fontConfig?.fallback ?? TERMINAL_FONTS[0].fallback;
     terminal.options.fontSize = DEFAULT_TERMINAL_CONFIG.fontSize;
-  }, [terminal, appTheme]);
+  }, [terminal, appTheme, serialThemeColors]);
 
   // ── WebSocket (Electron) path ──────────────────────────────────────────
 
@@ -355,8 +364,14 @@ export const Serial = forwardRef<SerialHandle, SerialProps>(function Serial(
   }
 
   return (
-    <div ref={containerRef} className="flex h-full w-full">
-      <div ref={xtermRef} className="flex-1 min-h-0" />
+    <div
+      ref={containerRef}
+      // 3px inset, over the terminal's own background so it reads as padding
+      // rather than a frame. Matches the SSH and local consoles.
+      className="flex h-full w-full p-[3px]"
+      style={{ backgroundColor: serialThemeColors.background }}
+    >
+      <div ref={xtermRef} className="min-h-0 flex-1" />
     </div>
   );
 });

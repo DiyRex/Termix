@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { SectionCard, SettingRow, FakeSwitch } from "@/components/section-card";
+import { DetailActionBar } from "@/components/detail-list";
 import { TerminalPreview } from "@/features/terminal/TerminalPreview";
 import {
   createSSHHost,
@@ -94,11 +95,33 @@ export function HostEditor({
   hosts,
   credentials,
   adminTargetUserId,
+  onConnect,
+  saveRef,
+  connectRef,
+  onSavingChange,
+  onConnectableChange,
+  showFooterSave = true,
+  showFooterConnect = true,
 }: {
   host: Host | null;
   activeTab: string;
   onBack: () => void;
   onSave: (saved: SSHHost) => void;
+  // Present when the editor is embedded somewhere that can open a session.
+  // Absent (e.g. admin impersonation) hides the Connect button.
+  onConnect?: (saved: SSHHost) => void;
+  // Containers that render their own save affordance (the inspector's header
+  // tick) take the handler through this ref and pass showFooterSave={false}.
+  saveRef?: React.MutableRefObject<(() => void) | null>;
+  // Same contract as saveRef, for a Connect button rendered by the container
+  // outside the scroll area (see showFooterConnect).
+  connectRef?: React.MutableRefObject<(() => void) | null>;
+  onSavingChange?: (saving: boolean) => void;
+  // Whether Connect is currently meaningful (an address has been entered), so a
+  // container-rendered button can disable itself in step with the form.
+  onConnectableChange?: (connectable: boolean) => void;
+  showFooterSave?: boolean;
+  showFooterConnect?: boolean;
   protocols: HostProtocols;
   onProtocolChange: (p: Partial<typeof protocols>) => void;
   onTabChange: (tab: string) => void;
@@ -265,7 +288,9 @@ export function HostEditor({
       .finally(() => setTailscaleLoading(false));
   }, [form.authType]);
 
-  const handleSave = async () => {
+  // `connectAfter` backs the Connect button: the host is persisted first so the
+  // session opens against what was just edited, not the stale stored row.
+  const handleSave = async (connectAfter = false) => {
     setSaving(true);
     try {
       const data = buildHostEditorPayload(form, protocols);
@@ -282,12 +307,39 @@ export function HostEditor({
       toast.success(host ? t("hosts.hostUpdated") : t("hosts.hostCreated"));
       setPreviewTerminalTheme(null);
       onSave(saved);
+      if (connectAfter) onConnect?.(saved);
     } catch {
       toast.error(t("hosts.failedToSave"));
     } finally {
       setSaving(false);
     }
   };
+
+  // Deliberately re-assigned on every render (no dep array): the handler closes
+  // over `form`, so a memoised version would save stale values.
+  useEffect(() => {
+    if (!saveRef) return;
+    saveRef.current = () => void handleSave(false);
+    return () => {
+      saveRef.current = null;
+    };
+  });
+
+  useEffect(() => {
+    if (!connectRef) return;
+    connectRef.current = () => void handleSave(true);
+    return () => {
+      connectRef.current = null;
+    };
+  });
+
+  useEffect(() => {
+    onSavingChange?.(saving);
+  }, [saving, onSavingChange]);
+
+  useEffect(() => {
+    onConnectableChange?.(!!form.ip);
+  }, [form.ip, onConnectableChange]);
 
   const authMethod = form.authType;
   const selectedCredential = credentials.find(
@@ -430,6 +482,10 @@ export function HostEditor({
               handleProtocolToggle={handleProtocolToggle}
               hosts={hosts}
               host={host}
+              credentials={credentials}
+              vaultProfiles={vaultProfiles}
+              snippets={snippets}
+              lockAuthReferences={lockAuthReferences}
             />
           )}
 
@@ -2305,32 +2361,50 @@ export function HostEditor({
         </div>
       </fieldset>
 
-      <div className="flex justify-end gap-3 mt-3 mb-6">
-        <Button
-          variant="ghost"
-          onClick={() => {
-            setPreviewTerminalTheme(null);
-            onBack();
-          }}
-          disabled={saving}
-        >
-          {t("hosts.guac.cancelBtn")}
-        </Button>
-        {!readOnly && (
-          <Button
-            variant="outline"
-            className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 hover:text-accent-brand px-8"
-            onClick={handleSave}
-            disabled={saving}
-          >
-            {saving
-              ? t("hosts.guac.savingBtn")
-              : host
-                ? t("hosts.guac.updateHostBtn")
-                : t("hosts.guac.addHostBtn")}
-          </Button>
-        )}
-      </div>
+      {/* Skipped entirely when neither action would render, so the panel does
+          not end in an empty bordered strip. */}
+      {(showFooterSave || (showFooterConnect && onConnect && !readOnly)) && (
+        <DetailActionBar>
+          {showFooterConnect && onConnect && !readOnly && (
+            <Button
+              className="h-11 w-full bg-emerald-600 text-base font-semibold text-white hover:bg-emerald-500"
+              onClick={() => handleSave(true)}
+              disabled={saving || !form.ip}
+              title={!form.ip ? t("hosts.connectNeedsAddress") : undefined}
+            >
+              {saving ? t("hosts.guac.savingBtn") : t("hosts.connectBtn")}
+            </Button>
+          )}
+          {showFooterSave && (
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setPreviewTerminalTheme(null);
+                  onBack();
+                }}
+                disabled={saving}
+              >
+                {t("hosts.guac.cancelBtn")}
+              </Button>
+              {!readOnly && (
+                <Button
+                  variant="outline"
+                  className="border-accent-brand/40 text-accent-brand hover:bg-accent-brand/10 hover:text-accent-brand px-8"
+                  onClick={() => handleSave(false)}
+                  disabled={saving}
+                >
+                  {saving
+                    ? t("hosts.guac.savingBtn")
+                    : host
+                      ? t("hosts.guac.updateHostBtn")
+                      : t("hosts.guac.addHostBtn")}
+                </Button>
+              )}
+            </div>
+          )}
+        </DetailActionBar>
+      )}
 
       {showQuickCredentialDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">

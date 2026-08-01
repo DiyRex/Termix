@@ -199,6 +199,8 @@ export const hosts = sqliteTable("ssh_data", {
   terminalConfig: text("terminal_config"),
   quickActions: text("quick_actions"),
   notes: text("notes"),
+  // Platform badge shown beside the address in the host editor / lists.
+  osIcon: text("os_icon"),
   enableSsh: integer("enable_ssh", { mode: "boolean" }).notNull().default(true),
   enableRdp: integer("enable_rdp", { mode: "boolean" }).notNull().default(false),
   enableVnc: integer("enable_vnc", { mode: "boolean" }).notNull().default(false),

@@ -165,6 +165,8 @@ export interface Host {
   statsConfig?: string | Record<string, unknown>;
   terminalConfig?: TerminalConfig;
   notes?: string;
+  /** Platform badge id shown beside the address (see HOST_OS_OPTIONS). */
+  osIcon?: string | null;
 
   useSocks5?: boolean;
   socks5Host?: string;
@@ -288,6 +290,8 @@ export interface HostData {
   statsConfig?: string | Record<string, unknown>;
   terminalConfig?: TerminalConfig;
   notes?: string;
+  /** Platform badge id shown beside the address (see HOST_OS_OPTIONS). */
+  osIcon?: string | null;
 
   useSocks5?: boolean;
   socks5Host?: string;
@@ -636,6 +640,8 @@ export interface TerminalConfig {
   minimumContrastRatio: number;
 
   backspaceMode: "normal" | "control-h";
+  /** Session encoding, e.g. "UTF-8". Absent means UTF-8. */
+  charset?: string;
   agentForwarding: boolean;
   environmentVariables: Array<{ key: string; value: string }>;
   startupSnippetId: number | null;

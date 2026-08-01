@@ -118,6 +118,7 @@ export type NormalizedImportedHost = Record<string, unknown> & {
   terminalConfig?: unknown;
   forceKeyboardInteractive?: unknown;
   notes?: unknown;
+  osIcon?: unknown;
   useSocks5?: unknown;
   socks5Host?: unknown;
   socks5Port?: unknown;

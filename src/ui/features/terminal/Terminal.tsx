@@ -58,7 +58,10 @@ import { ConnectionLog } from "@/ssh/connection-log/ConnectionLog.tsx";
 import { toast } from "sonner";
 import { Button } from "@/components/button";
 import { Save } from "lucide-react";
-import { resolveTermixThemeColors } from "./terminal-theme.ts";
+import {
+  getDefaultTerminalTheme,
+  resolveTermixThemeColors,
+} from "./terminal-theme.ts";
 import { ShareSessionModal } from "@/features/session-sharing/ShareSessionModal.tsx";
 import type { TerminalHandle, TerminalHostConfig } from "./terminal-types.ts";
 import {
@@ -146,13 +149,24 @@ const TerminalInner = forwardRef<TerminalHandle, SSHTerminalProps>(
     const savedTheme = localStorage.getItem(
       `terminal_theme_host_${hostConfig.id}`,
     );
+    // Theme precedence: an explicit per-host override, then a theme the host
+    // itself carries, then the app-wide default.
+    //
+    // "termix" is the sentinel for "nothing chosen" — it means "follow the UI
+    // theme" rather than naming a palette, and it is what every host gets
+    // written by default. Treating it as a real choice is what kept remote
+    // sessions off the app default while the local console honoured it, so a
+    // stored "termix" falls through here and every terminal surface — remote,
+    // local, docker, serial — lands on the same default.
+    const hostTheme = hostConfig.terminalConfig?.theme;
     const config = {
       ...DEFAULT_TERMINAL_CONFIG,
       ...hostConfig.terminalConfig,
       theme:
         savedTheme ||
-        hostConfig.terminalConfig?.theme ||
-        DEFAULT_TERMINAL_CONFIG.theme,
+        (hostTheme && hostTheme !== "termix"
+          ? hostTheme
+          : getDefaultTerminalTheme()),
     };
 
     const activeTheme = previewTheme || config.theme;
@@ -2880,7 +2894,10 @@ const TerminalInner = forwardRef<TerminalHandle, SSHTerminalProps>(
 
     return (
       <div
-        className="h-full w-full relative"
+        // 3px of breathing room so glyphs aren't flush against the window edge.
+        // On the outer box, which already paints the terminal background, so the
+        // inset reads as part of the terminal rather than as a border.
+        className="relative h-full w-full p-[3px]"
         style={{
           backgroundColor: backgroundImage ? "transparent" : backgroundColor,
           ...(backgroundImage && {

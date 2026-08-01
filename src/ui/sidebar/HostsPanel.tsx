@@ -1039,7 +1039,11 @@ export function HostsPanel({
       <div
         className={managerEditing ? "flex flex-col flex-1 min-h-0" : "hidden"}
       >
-        <HostManager onEditingChange={handleEditingChange} active={active} />
+        <HostManager
+          onEditingChange={handleEditingChange}
+          active={active}
+          onOpenTab={onOpenTab}
+        />
       </div>
 
       <HostShareModal

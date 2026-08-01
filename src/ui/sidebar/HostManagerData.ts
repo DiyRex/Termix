@@ -61,8 +61,15 @@ export function sshHostToHost(h: SSHHostWithStatus): Host {
         ? String((h as { vaultProfileId?: number | string }).vaultProfileId)
         : undefined,
     notes: h.notes,
+    osIcon: h.osIcon ?? undefined,
     pin: h.pin ?? false,
     macAddress: h.macAddress,
+    // Both were previously dropped here, so the editor reopened with the field
+    // blank and silently cleared the stored value on the next save.
+    wolBroadcastAddress: h.wolBroadcastAddress ?? undefined,
+    connectionOrigin:
+      (h as { connectionOrigin?: "local" | "remote" | null })
+        .connectionOrigin ?? null,
     enableSsh: h.enableSsh != null ? h.enableSsh : isSshHost,
     enableTerminal:
       h.enableTerminal ?? (h.enableSsh != null ? h.enableSsh : isSshHost),

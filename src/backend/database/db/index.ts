@@ -1497,6 +1497,7 @@ const migrateSchema = () => {
     { column: "telnet_auth_type", sql: "ALTER TABLE ssh_data ADD COLUMN telnet_auth_type TEXT" },
     { column: "allow_session_sharing", sql: "ALTER TABLE ssh_data ADD COLUMN allow_session_sharing INTEGER NOT NULL DEFAULT 1" },
     { column: "connection_origin", sql: "ALTER TABLE ssh_data ADD COLUMN connection_origin TEXT" },
+    { column: "os_icon", sql: "ALTER TABLE ssh_data ADD COLUMN os_icon TEXT" },
   ];
 
   for (const migration of sshDataMigrations) {
