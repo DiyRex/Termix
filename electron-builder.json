@@ -125,8 +125,8 @@
     "type": "distribution",
     "minimumSystemVersion": "10.15",
     "mergeASARs": false,
-    "singleArchFiles": "**/*.{node,bare}",
-    "x64ArchFiles": "**/*.{node,bare}"
+    "singleArchFiles": "**/{*.node,*.bare,spawn-helper}",
+    "x64ArchFiles": "**/{*.node,*.bare,spawn-helper}"
   },
   "dmg": {
     "artifactName": "termix_macos_${arch}_dmg.${ext}",

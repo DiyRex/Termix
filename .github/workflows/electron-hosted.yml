@@ -77,6 +77,24 @@ jobs:
           node-version-file: ".nvmrc"
           cache: "npm"
 
+      # Electron ships a ~100 MB zip per arch, and electron-builder downloads its
+      # own helpers (app-builder, fpm for deb/rpm, the AppImage runtime). None of
+      # it was cached, so every run re-fetched all of it — on the Linux job that
+      # is three arches' worth before any packaging starts.
+      - name: Cache Electron and electron-builder downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+            ~/Library/Caches/electron
+            ~/Library/Caches/electron-builder
+            ~\AppData\Local\electron\Cache
+            ~\AppData\Local\electron-builder\Cache
+          key: ${{ runner.os }}-electron-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-electron-
+
       - name: Install dependencies
         run: npm ci
 
@@ -176,6 +194,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libfuse2 flatpak flatpak-builder imagemagick rpm
 
+      # Electron ships a ~100 MB zip per arch, and electron-builder downloads its
+      # own helpers (app-builder, fpm for deb/rpm, the AppImage runtime). None of
+      # it was cached, so every run re-fetched all of it — on the Linux job that
+      # is three arches' worth before any packaging starts.
+      - name: Cache Electron and electron-builder downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+            ~/Library/Caches/electron
+            ~/Library/Caches/electron-builder
+            ~\AppData\Local\electron\Cache
+            ~\AppData\Local\electron-builder\Cache
+          key: ${{ runner.os }}-electron-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-electron-
+
       - name: Install dependencies
         run: |
           npm ci
@@ -189,15 +225,15 @@ jobs:
           DEBUG: electron-builder
         run: npm run build && npx electron-builder --linux --x64
 
-      # Fail-soft on purpose. Native modules have to be rebuilt for the target
-      # arch, and node-pty ships no Linux prebuild, so cross-compiling it for
-      # arm from an x64 runner hits "node-gyp does not support cross-compiling
-      # native modules from source". Without this the whole job dies here and
-      # the x64 packages built in the previous step never get uploaded.
+      # Fail-soft on purpose, but not because arm is expected to fail: a real run
+      # rebuilds all four native modules for armv7l and arm64 and packages every
+      # target, rpm included. @electron/rebuild fetches prebuilds rather than
+      # cross-compiling, so the node-gyp cross-compile limitation does not bite.
       #
-      # Proper arm64 Linux packages need a native arm runner (or QEMU); the
-      # missing-asset warning in release-desktop.yml's summary makes the gap
-      # visible rather than silent.
+      # The flag stays because this is the longest and most fragile leg, and the
+      # x64 packages are already built by the previous step. Losing them to an
+      # arm hiccup would be the worst outcome; the missing-asset warning in
+      # release-desktop.yml's summary keeps a partial result visible.
       - name: Build Linux arm64 and armv7l
         continue-on-error: true
         env:
@@ -210,6 +246,14 @@ jobs:
 
           if [ -f "termix_linux_amd64_deb.deb" ]; then
             mv "termix_linux_amd64_deb.deb" "termix_linux_x64_deb.deb"
+          fi
+
+          if [ -f "termix_linux_x86_64_rpm.rpm" ]; then
+            mv "termix_linux_x86_64_rpm.rpm" "termix_linux_x64_rpm.rpm"
+          fi
+
+          if [ -f "termix_linux_aarch64_rpm.rpm" ]; then
+            mv "termix_linux_aarch64_rpm.rpm" "termix_linux_arm64_rpm.rpm"
           fi
 
           if [ -f "termix_linux_x86_64_appimage.AppImage" ]; then
@@ -280,6 +324,14 @@ jobs:
         with:
           name: termix_linux_arm64_rpm
           path: release/termix_linux_arm64_rpm.rpm
+          retention-days: 30
+
+      - name: Upload Linux armv7l rpm
+        uses: actions/upload-artifact@v7
+        if: hashFiles('release/termix_linux_armv7l_rpm.rpm') != '' && inputs.artifact_destination != 'none'
+        with:
+          name: termix_linux_armv7l_rpm
+          path: release/termix_linux_armv7l_rpm.rpm
           retention-days: 30
 
       - name: Upload Linux x64 tar.gz
@@ -410,6 +462,24 @@ jobs:
         with:
           node-version-file: ".nvmrc"
           cache: "npm"
+
+      # Electron ships a ~100 MB zip per arch, and electron-builder downloads its
+      # own helpers (app-builder, fpm for deb/rpm, the AppImage runtime). None of
+      # it was cached, so every run re-fetched all of it — on the Linux job that
+      # is three arches' worth before any packaging starts.
+      - name: Cache Electron and electron-builder downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+            ~/Library/Caches/electron
+            ~/Library/Caches/electron-builder
+            ~\AppData\Local\electron\Cache
+            ~\AppData\Local\electron-builder\Cache
+          key: ${{ runner.os }}-electron-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-electron-
 
       - name: Install dependencies
         run: |
@@ -777,6 +847,24 @@ jobs:
           echo "appimage_arm64_name=$APPIMAGE_ARM64_NAME" >> $GITHUB_OUTPUT
           echo "checksum_arm64=$CHECKSUM_ARM64" >> $GITHUB_OUTPUT
 
+      # Electron ships a ~100 MB zip per arch, and electron-builder downloads its
+      # own helpers (app-builder, fpm for deb/rpm, the AppImage runtime). None of
+      # it was cached, so every run re-fetched all of it — on the Linux job that
+      # is three arches' worth before any packaging starts.
+      - name: Cache Electron and electron-builder downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+            ~/Library/Caches/electron
+            ~/Library/Caches/electron-builder
+            ~\AppData\Local\electron\Cache
+            ~\AppData\Local\electron-builder\Cache
+          key: ${{ runner.os }}-electron-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-electron-
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -1011,6 +1099,24 @@ jobs:
         with:
           node-version-file: ".nvmrc"
           cache: "npm"
+
+      # Electron ships a ~100 MB zip per arch, and electron-builder downloads its
+      # own helpers (app-builder, fpm for deb/rpm, the AppImage runtime). None of
+      # it was cached, so every run re-fetched all of it — on the Linux job that
+      # is three arches' worth before any packaging starts.
+      - name: Cache Electron and electron-builder downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+            ~/Library/Caches/electron
+            ~/Library/Caches/electron-builder
+            ~\AppData\Local\electron\Cache
+            ~\AppData\Local\electron-builder\Cache
+          key: ${{ runner.os }}-electron-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-electron-
 
       - name: Install dependencies
         run: |
