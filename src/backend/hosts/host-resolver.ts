@@ -124,9 +124,25 @@ export async function resolveHostById(
     if (!resolved) return null;
   } else {
     let effectiveCredentialId = host.credentialId as number | null | undefined;
+    // A host can need a secret without its authType literally being
+    // "credential": picking "key" or "password" and leaving the fields empty is
+    // the normal way to say "use the credential assigned to my folder". Gating
+    // this fallback on authType === "credential" alone meant such a host
+    // resolved with authType "key" and no key, which every consumer of this
+    // resolver then reported as missing credentials — the SFTP browser, the
+    // terminal and the metrics collector alike.
+    //
+    // Only fires when there is nothing else to use, so an inline key or
+    // password still wins.
+    const hasInlineSecret = !!host.key || !!host.password;
+    const wantsSecret =
+      host.authType === "credential" ||
+      host.authType === "key" ||
+      host.authType === "password";
     if (
       !effectiveCredentialId &&
-      host.authType === "credential" &&
+      !hasInlineSecret &&
+      wantsSecret &&
       host.folder
     ) {
       try {

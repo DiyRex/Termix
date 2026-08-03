@@ -170,6 +170,67 @@ describe("resolveHostById", () => {
     expect(host.authType).toBe("password");
   });
 
+  it("falls back to the folder credential for an empty key host, not just authType credential", async () => {
+    // A host set to "key" with the key field left blank means "use the folder's
+    // credential". Without this it resolved as authType "key" with no key, and
+    // SFTP/terminal/metrics all reported missing credentials.
+    state.host = baseHost({
+      authType: "key",
+      credentialId: null,
+      folder: "DevQA",
+      username: "ubuntu",
+      password: null,
+      key: null,
+    });
+    state.folderCredentialId = 21;
+    state.credentials.set("21:owner", {
+      id: 21,
+      username: "ubuntu",
+      authType: "key",
+      password: null,
+      privateKey: "-----BEGIN OPENSSH PRIVATE KEY-----folder",
+      key: null,
+      keyPassword: null,
+      keyType: "ssh-ed25519",
+    });
+
+    const host = (await resolveHostById(42, "owner")) as Record<
+      string,
+      unknown
+    >;
+    expect(host.key).toBe("-----BEGIN OPENSSH PRIVATE KEY-----folder");
+    expect(host.authType).toBe("key");
+  });
+
+  it("keeps an inline key rather than replacing it with the folder credential", async () => {
+    state.host = baseHost({
+      authType: "key",
+      credentialId: null,
+      folder: "DevQA",
+      username: "ubuntu",
+      password: null,
+      key: "-----BEGIN OPENSSH PRIVATE KEY-----inline",
+    });
+    state.folderCredentialId = 21;
+    state.credentials.set("21:owner", {
+      id: 21,
+      username: "someone-else",
+      authType: "key",
+      password: null,
+      privateKey: "-----BEGIN OPENSSH PRIVATE KEY-----folder",
+      key: null,
+      keyPassword: null,
+      keyType: "ssh-ed25519",
+    });
+
+    const host = (await resolveHostById(42, "owner")) as Record<
+      string,
+      unknown
+    >;
+    expect(host.key).toBe("-----BEGIN OPENSSH PRIVATE KEY-----inline");
+    expect(host.username).toBe("ubuntu");
+  });
+
   it("prefers the host's own credential over its folder's credential", async () => {
     state.host = baseHost({
       authType: "credential",
