@@ -1,0 +1,102 @@
+name: Release Desktop Binaries
+
+# One entry point for desktop releases in this fork.
+#
+# Publishing a GitHub Release fires this; it takes the tag from that release,
+# builds every desktop target on GitHub-hosted runners, and attaches the
+# installers to the same release.
+#
+# The build itself lives in electron-hosted.yml rather than being duplicated
+# here — that workflow already knows how to build each platform and is callable.
+# Upstream's electron.yml pins blacksmith-* runners that do not exist on a fork,
+# which is why the GitHub-hosted variant exists at all.
+#
+# Signing: none. No Developer ID, no notarisation, no Windows Authenticode. The
+# macOS job only builds the App Store package when signing secrets are present,
+# so without them it produces an unsigned DMG and skips MAS. Consequences for
+# whoever installs the result:
+#   - macOS: Gatekeeper blocks it on first open. Right-click > Open, or
+#     `xattr -dr com.apple.quarantine /Applications/Termix.app`.
+#   - Windows: SmartScreen shows "unrecognised app" until the download builds
+#     reputation. More info > Run anyway.
+#   - Linux: unaffected; deb/rpm/tar.gz/AppImage do not expect a signature.
+
+on:
+  release:
+    types: [published]
+  # Manual re-run, e.g. when one platform failed and the release already exists.
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Existing release tag to build and attach assets to"
+        required: true
+        type: string
+      build_type:
+        description: "Platform to build"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - windows
+          - linux
+          - macos
+
+permissions:
+  contents: write # required to upload assets onto the release
+
+concurrency:
+  # One build per tag. A re-publish supersedes an in-flight run rather than
+  # racing it to upload the same asset names.
+  group: release-desktop-${{ github.event.release.tag_name || inputs.release_tag }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    uses: ./.github/workflows/electron-hosted.yml
+    secrets: inherit
+    with:
+      build_type: ${{ inputs.build_type || 'all' }}
+      # Uploads each artifact onto the release as well as keeping it as a
+      # workflow artifact.
+      artifact_destination: release
+      release_tag: ${{ github.event.release.tag_name || inputs.release_tag }}
+      # Build exactly what the tag points at, not whatever the default branch
+      # happens to be when the runner picks the job up.
+      source_ref: ${{ github.event.release.tag_name || inputs.release_tag }}
+
+  summary:
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report what landed on the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+        run: |
+          echo "## Desktop release assets — $TAG" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" \
+                --json assets --jq '.assets[].name' > assets.txt 2>/dev/null; then
+            echo "Could not read release \`$TAG\`." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          echo "| Asset |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| --- |" >> "$GITHUB_STEP_SUMMARY"
+          while read -r name; do
+            [ -n "$name" ] && echo "| \`$name\` |" >> "$GITHUB_STEP_SUMMARY"
+          done < assets.txt
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "These builds are unsigned. macOS: right-click > Open, or \`xattr -dr com.apple.quarantine\`. Windows: SmartScreen > More info > Run anyway." >> "$GITHUB_STEP_SUMMARY"
+
+          # Surface a missing platform rather than letting a green tick imply
+          # everything shipped.
+          for expected in dmg nsis deb rpm tar.gz AppImage; do
+            if ! grep -q "$expected" assets.txt; then
+              echo "> [!WARNING]" >> "$GITHUB_STEP_SUMMARY"
+              echo "> No \`$expected\` asset was attached — check the matching build job." >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done

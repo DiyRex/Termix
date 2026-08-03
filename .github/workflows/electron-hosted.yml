@@ -174,7 +174,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libfuse2 flatpak flatpak-builder imagemagick
+          sudo apt-get install -y libfuse2 flatpak flatpak-builder imagemagick rpm
 
       - name: Install dependencies
         run: |
@@ -189,7 +189,17 @@ jobs:
           DEBUG: electron-builder
         run: npm run build && npx electron-builder --linux --x64
 
+      # Fail-soft on purpose. Native modules have to be rebuilt for the target
+      # arch, and node-pty ships no Linux prebuild, so cross-compiling it for
+      # arm from an x64 runner hits "node-gyp does not support cross-compiling
+      # native modules from source". Without this the whole job dies here and
+      # the x64 packages built in the previous step never get uploaded.
+      #
+      # Proper arm64 Linux packages need a native arm runner (or QEMU); the
+      # missing-asset warning in release-desktop.yml's summary makes the gap
+      # visible rather than silent.
       - name: Build Linux arm64 and armv7l
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx electron-builder --linux --arm64 --armv7l
@@ -254,6 +264,22 @@ jobs:
         with:
           name: termix_linux_armv7l_deb
           path: release/termix_linux_armv7l_deb.deb
+          retention-days: 30
+
+      - name: Upload Linux x64 rpm
+        uses: actions/upload-artifact@v7
+        if: hashFiles('release/termix_linux_x64_rpm.rpm') != '' && inputs.artifact_destination != 'none'
+        with:
+          name: termix_linux_x64_rpm
+          path: release/termix_linux_x64_rpm.rpm
+          retention-days: 30
+
+      - name: Upload Linux arm64 rpm
+        uses: actions/upload-artifact@v7
+        if: hashFiles('release/termix_linux_arm64_rpm.rpm') != '' && inputs.artifact_destination != 'none'
+        with:
+          name: termix_linux_arm64_rpm
+          path: release/termix_linux_arm64_rpm.rpm
           retention-days: 30
 
       - name: Upload Linux x64 tar.gz
@@ -912,7 +938,10 @@ jobs:
 
   upload-to-release:
     runs-on: ubuntu-latest
-    if: inputs.artifact_destination == 'release'
+    # always(): attach whatever did build. Without it a single failing platform
+    # blocks the upload and a release ends up with no assets at all, even though
+    # the other two produced installers.
+    if: always() && inputs.artifact_destination == 'release'
     needs: [build-windows, build-linux, build-macos]
     permissions:
       contents: write
@@ -937,17 +966,29 @@ jobs:
 
       - name: Upload artifacts to latest release
         run: |
-          cd artifacts
-          for dir in */; do
-            cd "$dir"
-            for file in *;
-            do
-              if [ -f "$file" ]; then
-                gh release upload "$RELEASE_TAG" "$file" --repo ${{ github.repository }} --clobber
-              fi
-            done
-            cd ..
-          done
+          set -euo pipefail
+
+          if [ ! -d artifacts ]; then
+            echo "No artifacts were downloaded — every build job must have failed."
+            exit 1
+          fi
+
+          # find, not a nested glob: with no artifacts the old `cd */` expanded to
+          # the literal pattern and killed the step, and it also flattens the
+          # one-directory-per-artifact layout for free.
+          uploaded=0
+          while IFS= read -r -d '' file; do
+            echo "Uploading $(basename "$file")"
+            gh release upload "$RELEASE_TAG" "$file" \
+              --repo ${{ github.repository }} --clobber
+            uploaded=$((uploaded + 1))
+          done < <(find artifacts -type f -print0)
+
+          echo "Attached $uploaded asset(s) to $RELEASE_TAG"
+          if [ "$uploaded" -eq 0 ]; then
+            echo "Nothing was attached to the release."
+            exit 1
+          fi
         env:
           GH_TOKEN: ${{ github.token }}
 
