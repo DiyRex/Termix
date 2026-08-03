@@ -802,7 +802,7 @@ function getBackendPaths() {
   // app-arm64.asar / app-x64.asar instead of app.asar, so match all variants.
   const unpackedRoot = appRoot.replace(
     /app(-[a-z0-9]+)?\.asar(?!\.unpacked)/,
-    "app.asar.unpacked",
+    "app$1.asar.unpacked",
   );
   const backendDir = path.join(unpackedRoot, "dist", "backend", "backend");
   return {
@@ -1033,7 +1033,7 @@ function createTray() {
       : path.join(
           appRoot.replace(
             /app(-[a-z0-9]+)?\.asar(?!\.unpacked)/,
-            "app.asar.unpacked",
+            "app$1.asar.unpacked",
           ),
           "public",
         );
