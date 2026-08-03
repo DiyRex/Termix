@@ -88,6 +88,8 @@ function FileManagerContent({
   onClose,
   onOpenTerminalTab,
   isVisible = true,
+  onSessionChange,
+  onPathChange,
 }: FileManagerProps) {
   const { openWindow } = useWindowManager();
   const { t } = useTranslation();
@@ -113,6 +115,17 @@ function FileManagerContent({
   const [files, setFiles] = useState<FileItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [sshSessionId, setSshSessionId] = useState<string | null>(null);
+
+  // Surfaced to a host component (the SFTP tab) so transfers can reuse this
+  // session rather than opening a second one to the same host.
+  useEffect(() => {
+    onSessionChange?.(sshSessionId);
+  }, [sshSessionId, onSessionChange]);
+
+  // The SFTP tab needs the listed directory to know where a dropped file goes.
+  useEffect(() => {
+    if (currentPath) onPathChange?.(currentPath);
+  }, [currentPath, onPathChange]);
   const [isReconnecting, setIsReconnecting] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [lastRefreshTime, setLastRefreshTime] = useState<number>(0);
@@ -3107,10 +3120,14 @@ function FileManagerInner({
   onClose,
   onOpenTerminalTab,
   isVisible = true,
+  onSessionChange,
+  onPathChange,
 }: FileManagerProps) {
   return (
     <WindowManager>
       <FileManagerContent
+        onSessionChange={onSessionChange}
+        onPathChange={onPathChange}
         initialHost={initialHost}
         initialFilePath={initialFilePath}
         initialPath={initialPath}

@@ -69,7 +69,18 @@ function EntryIcon({ entry }: { entry: LocalDirEntry }) {
  * The local half of the SFTP tab: this machine's filesystem as a details table,
  * so a transfer has a near side without opening a second app.
  */
-export function LocalFilePane() {
+/** Payload carried by a drag between the two SFTP panes. */
+export const SFTP_DRAG_MIME = "application/x-termix-sftp-entry";
+
+export function LocalFilePane({
+  onDropRemoteFile,
+  currentPathRef,
+}: {
+  /** Called when a remote entry is dropped here; resolves when transferred. */
+  onDropRemoteFile?: (remotePath: string, localDir: string) => Promise<void>;
+  /** Lets the parent read the directory currently shown, for the reverse drop. */
+  currentPathRef?: React.MutableRefObject<string | null>;
+} = {}) {
   const { t } = useTranslation();
   const [listing, setListing] = useState<LocalListing | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -86,6 +97,8 @@ export function LocalFilePane() {
     value: string;
   } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [dropActive, setDropActive] = useState(false);
+  const [transferring, setTransferring] = useState<string | null>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
 
   const supported = isElectron();
@@ -129,6 +142,10 @@ export function LocalFilePane() {
     }
     void load();
   }, [load, supported]);
+
+  useEffect(() => {
+    if (currentPathRef) currentPathRef.current = listing?.path ?? null;
+  }, [currentPathRef, listing?.path]);
 
   const selectedEntry = useMemo(
     () => listing?.entries.find((e) => e.path === selected) ?? null,
@@ -405,7 +422,53 @@ export function LocalFilePane() {
         <span>{t("localFiles.colKind", { defaultValue: "Kind" })}</span>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div
+        className={`relative min-h-0 flex-1 overflow-y-auto ${
+          dropActive ? "ring-2 ring-accent-brand ring-inset" : ""
+        }`}
+        onDragOver={(e) => {
+          if (!onDropRemoteFile) return;
+          if (!e.dataTransfer.types.includes(SFTP_DRAG_MIME)) return;
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "copy";
+          setDropActive(true);
+        }}
+        onDragLeave={() => setDropActive(false)}
+        onDrop={(e) => {
+          setDropActive(false);
+          if (!onDropRemoteFile || !listing?.path) return;
+          const raw = e.dataTransfer.getData(SFTP_DRAG_MIME);
+          if (!raw) return;
+          e.preventDefault();
+          let payload: { side?: string; path?: string };
+          try {
+            payload = JSON.parse(raw);
+          } catch {
+            return;
+          }
+          // Ignore a drag that started in this pane; only the remote side has
+          // anywhere to come from.
+          if (payload.side !== "remote" || !payload.path) return;
+
+          const name = payload.path.split("/").pop() || "download";
+          setTransferring(name);
+          void onDropRemoteFile(payload.path, listing.path)
+            .then(() => load(listing.path))
+            .catch((err) =>
+              setError(err instanceof Error ? err.message : "Transfer failed"),
+            )
+            .finally(() => setTransferring(null));
+        }}
+      >
+        {transferring && (
+          <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-border/60 bg-surface px-4 py-1.5 text-xs text-muted-foreground">
+            <div className="size-3 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-accent-brand" />
+            {t("localFiles.receiving", {
+              defaultValue: "Receiving {{name}}...",
+              name: transferring,
+            })}
+          </div>
+        )}
         {error ? (
           <p className="px-4 py-6 text-sm text-destructive">{error}</p>
         ) : loading && !listing ? (
@@ -432,6 +495,17 @@ export function LocalFilePane() {
             {rows.map((entry) => (
               <button
                 key={entry.path}
+                // Only files can be dragged: a directory transfer needs a
+                // recursive walk the backend route deliberately refuses.
+                draggable={entry.type === "file"}
+                onDragStart={(e) => {
+                  if (entry.type !== "file") return;
+                  e.dataTransfer.setData(
+                    SFTP_DRAG_MIME,
+                    JSON.stringify({ side: "local", path: entry.path }),
+                  );
+                  e.dataTransfer.effectAllowed = "copy";
+                }}
                 // Single click selects (giving Rename a target), double click
                 // descends — the convention every file browser uses.
                 onClick={() =>

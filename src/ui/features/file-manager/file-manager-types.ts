@@ -9,6 +9,13 @@ export interface FileManagerProps {
   onOpenTerminalTab?: (path?: string) => void;
   /** When false, pause keepalive while the tab stays mounted in the background. */
   isVisible?: boolean;
+  /**
+   * Reports the live SFTP session id, so a host of this browser (the SFTP tab)
+   * can run transfers against the same session instead of opening a second one.
+   */
+  onSessionChange?: (sessionId: string | null) => void;
+  /** Directory currently listed, for a drop target outside this component. */
+  onPathChange?: (path: string) => void;
 }
 
 export type ConnectionLogPayload = Omit<LogEntry, "id" | "timestamp">;

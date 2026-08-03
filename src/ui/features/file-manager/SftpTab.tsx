@@ -1,11 +1,15 @@
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Check, FolderClosed, Search, X } from "lucide-react";
 import { Button } from "@/components/button.tsx";
 import { Input } from "@/components/input.tsx";
 import type { Host, HostFolder } from "@/types/ui-types";
 import type { SSHHost } from "@/types/index";
-import { LocalFilePane } from "@/features/file-manager/LocalFilePane";
+import {
+  LocalFilePane,
+  SFTP_DRAG_MIME,
+} from "@/features/file-manager/LocalFilePane";
+import { downloadToLocalFile, uploadLocalFile } from "@/api/local-transfer-api";
 import { HostOsBadge } from "@/sidebar/HostOsBadge";
 import { guessHostOs } from "@/lib/host-os";
 
@@ -63,6 +67,33 @@ export function SftpTab({
   // window resizes rather than pinning one side to a pixel width.
   const [splitPct, setSplitPct] = useState(50);
   const [dragging, setDragging] = useState(false);
+  // Session and directory of the remote pane, reported by FileManager, so a
+  // transfer reuses that connection instead of opening a second one.
+  const [remoteSession, setRemoteSession] = useState<string | null>(null);
+  const remotePathRef = useRef<string>("");
+  const localPathRef = useRef<string | null>(null);
+  const [uploadDropActive, setUploadDropActive] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
+  const [transferError, setTransferError] = useState<string | null>(null);
+
+  /** Joins a remote directory and a file name with a single separator. */
+  const remoteJoin = (dir: string, name: string) =>
+    `${dir.endsWith("/") ? dir.slice(0, -1) : dir}/${name}`;
+
+  /** Remote entry dropped on the local pane. */
+  const handleDropRemote = useCallback(
+    async (remotePath: string, localDir: string) => {
+      if (!remoteSession) throw new Error("No SFTP session");
+      const name = remotePath.split("/").pop() || "download";
+      const sep = localDir.includes("\\") ? "\\" : "/";
+      await downloadToLocalFile(
+        remoteSession,
+        remotePath,
+        `${localDir}${sep}${name}`,
+      );
+    },
+    [remoteSession],
+  );
 
   const hosts = useMemo(() => {
     const all = flattenHosts(hostTree?.children ?? []);
@@ -96,7 +127,10 @@ export function SftpTab({
         className="flex min-h-0 min-w-0 flex-col bg-background"
         style={{ width: `${splitPct}%` }}
       >
-        <LocalFilePane />
+        <LocalFilePane
+          onDropRemoteFile={remoteSession ? handleDropRemote : undefined}
+          currentPathRef={localPathRef}
+        />
       </div>
 
       <div
@@ -134,11 +168,97 @@ export function SftpTab({
                 <X className="size-4" />
               </button>
             </div>
-            <div className="min-h-0 flex-1">
+            {/* Drop zone for local files. Wraps FileManager rather than
+                modifying it, so its own drag handling is untouched. */}
+            <div
+              className={`relative min-h-0 flex-1 ${
+                uploadDropActive ? "ring-2 ring-accent-brand ring-inset" : ""
+              }`}
+              onDragOver={(e) => {
+                if (!remoteSession) return;
+                if (!e.dataTransfer.types.includes(SFTP_DRAG_MIME)) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "copy";
+                setUploadDropActive(true);
+              }}
+              onDragLeave={() => setUploadDropActive(false)}
+              onDrop={(e) => {
+                setUploadDropActive(false);
+                const raw = e.dataTransfer.getData(SFTP_DRAG_MIME);
+                if (!raw || !remoteSession) return;
+                e.preventDefault();
+                let payload: { side?: string; path?: string };
+                try {
+                  payload = JSON.parse(raw);
+                } catch {
+                  return;
+                }
+                // Only a local entry has anywhere to go; ignore remote-to-remote.
+                if (payload.side !== "local" || !payload.path) return;
+
+                const dir = remotePathRef.current;
+                if (!dir) {
+                  setTransferError("Remote directory is not known yet");
+                  return;
+                }
+                const name = payload.path.split(/[\\/]/).pop() || "upload";
+                setTransferError(null);
+                setUploading(name);
+                void uploadLocalFile(
+                  remoteSession,
+                  payload.path,
+                  remoteJoin(dir, name),
+                )
+                  .then(() =>
+                    // Nudge the remote browser to re-list so the new file shows.
+                    window.dispatchEvent(
+                      new CustomEvent("termix:file-manager-refresh"),
+                    ),
+                  )
+                  .catch((err) =>
+                    setTransferError(
+                      err instanceof Error ? err.message : "Upload failed",
+                    ),
+                  )
+                  .finally(() => setUploading(null));
+              }}
+            >
+              {(uploading || transferError) && (
+                <div
+                  className={`absolute top-0 right-0 left-0 z-20 flex items-center gap-2 px-4 py-1.5 text-xs ${
+                    transferError
+                      ? "bg-destructive/15 text-destructive"
+                      : "bg-surface text-muted-foreground"
+                  }`}
+                >
+                  {uploading && (
+                    <div className="size-3 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-accent-brand" />
+                  )}
+                  <span className="truncate">
+                    {transferError ??
+                      t("sftp.uploading", {
+                        defaultValue: "Uploading {{name}}...",
+                        name: uploading,
+                      })}
+                  </span>
+                  {transferError && (
+                    <button
+                      onClick={() => setTransferError(null)}
+                      className="ml-auto shrink-0"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  )}
+                </div>
+              )}
               <Suspense fallback={<PaneFallback />}>
                 <FileManager
                   initialHost={hostToSSHHost(selectedHost)}
                   isVisible={isVisible}
+                  onSessionChange={setRemoteSession}
+                  onPathChange={(p) => {
+                    remotePathRef.current = p;
+                  }}
                 />
               </Suspense>
             </div>

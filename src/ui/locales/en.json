@@ -3801,7 +3801,8 @@
     "selectHost": "Select host",
     "searchPlaceholder": "Find a host...",
     "noHosts": "No hosts with file access.",
-    "disconnect": "Disconnect"
+    "disconnect": "Disconnect",
+    "uploading": "Uploading {{name}}..."
   },
   "localFiles": {
     "title": "Local",
@@ -3823,6 +3824,7 @@
     "refresh": "Refresh",
     "create": "Create",
     "newFolderPlaceholder": "Folder name",
-    "renamePlaceholder": "New name"
+    "renamePlaceholder": "New name",
+    "receiving": "Receiving {{name}}..."
   }
 }

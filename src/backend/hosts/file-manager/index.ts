@@ -43,6 +43,7 @@ import {
 } from "./session.js";
 import { registerFileListingRoutes } from "./list-routes.js";
 import { registerFileOperationRoutes } from "./operation-routes.js";
+import { registerLocalTransferRoutes } from "./local-transfer-routes.js";
 import { resolveSshConnectConfigHost } from "../ssh-dns.js";
 import { registerFileDownloadRoutes } from "./download-routes.js";
 import { registerFileActionRoutes } from "./action-routes.js";
@@ -2385,6 +2386,11 @@ registerFileListingRoutes(app, {
 });
 
 registerFileContentRoutes(app, {
+  sshSessions,
+  verifySessionOwnership,
+});
+
+registerLocalTransferRoutes(app, {
   sshSessions,
   verifySessionOwnership,
 });
