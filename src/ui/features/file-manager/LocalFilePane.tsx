@@ -413,10 +413,10 @@ export function LocalFilePane({
       {/* Column headers */}
       <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_190px_100px_110px] border-y border-border/60 px-4 py-2 text-sm font-semibold text-foreground">
         <span>{t("localFiles.colName", { defaultValue: "Name" })}</span>
-        <span>
+        <span className="pr-3">
           {t("localFiles.colModified", { defaultValue: "Date Modified" })}
         </span>
-        <span className="text-right">
+        <span className="pr-3 text-right">
           {t("localFiles.colSize", { defaultValue: "Size" })}
         </span>
         <span>{t("localFiles.colKind", { defaultValue: "Kind" })}</span>

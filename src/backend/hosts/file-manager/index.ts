@@ -727,6 +727,28 @@ app.post("/ssh/file_manager/ssh/connect", async (req, res) => {
     ),
   );
 
+  // The terminal and the metrics collector both refuse to go further without an
+  // unlocked data key; this endpoint did not, so an encrypted key it could not
+  // decrypt surfaced as "no usable credentials" — indistinguishable from a host
+  // that genuinely has none.
+  if (hostId && userId && !password && !sshKey) {
+    const { DataCrypto } = await import("../../utils/data-crypto.js");
+    if (DataCrypto.getUserDataKey(userId) === null) {
+      connectionLogs.push(
+        createConnectionLog(
+          "error",
+          "sftp_auth",
+          "Data locked — re-authenticate with your password to unlock stored credentials",
+        ),
+      );
+      return res.status(423).json({
+        error: "Data locked - re-authenticate with password",
+        code: "DATA_LOCKED",
+        connectionLogs,
+      });
+    }
+  }
+
   // Resolve credentials server-side when frontend doesn't provide them
   let resolvedCredentials = {
     password,

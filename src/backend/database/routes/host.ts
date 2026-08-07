@@ -1,4 +1,5 @@
 import type { AuthenticatedRequest } from "../../../types/index.js";
+import { validateHostAuth } from "./host-auth-validation.js";
 import express from "express";
 import type { Request, Response } from "express";
 import axios from "axios";
@@ -263,6 +264,30 @@ router.post(
       username || rdpUser || vncUser || telnetUser || "";
     const effectiveName =
       name || (effectiveUsername ? `${effectiveUsername}@${ip}` : String(ip));
+    // Refuse a configuration that cannot authenticate rather than saving it and
+    // failing at every later connect. Create only: on update the row may already
+    // hold a secret the client never receives, so rejecting there could refuse a
+    // perfectly good save.
+    const authProblem = await validateHostAuth(
+      {
+        authType: String(effectiveAuthType ?? ""),
+        key,
+        password,
+        credentialId,
+        vaultProfileId,
+        folder,
+      },
+      userId,
+    );
+    if (authProblem) {
+      sshLogger.warn("Rejected host with unusable authentication", {
+        operation: "host_create",
+        userId,
+        authType: String(effectiveAuthType ?? ""),
+      });
+      return res.status(400).json({ error: authProblem });
+    }
+
     const sshDataObj: Record<string, unknown> = {
       userId: userId,
       connectionType: effectiveConnectionType,
