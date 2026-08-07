@@ -12,6 +12,12 @@ const {
   nativeImage,
 } = require("electron");
 const path = require("path");
+
+// The tab strip doubles as the title bar on macOS and Windows. Kept here because
+// the traffic lights are placed against it; it must match TabBar's h-12.5.
+const TAB_STRIP_HEIGHT = 50;
+// Bounding height of the macOS close/minimize/zoom cluster.
+const MACOS_TRAFFIC_LIGHT_HEIGHT = 16;
 const fs = require("fs");
 const os = require("os");
 const https = require("https");
@@ -1116,8 +1122,20 @@ function createWindow() {
           // the buttons land wherever it likes, which is how they ended up on
           // top of the first tab.
           titleBarStyle: "hidden",
-          // Vertically centred in the 50px tab strip (14px tall buttons).
-          trafficLightPosition: { x: 20, y: 18 },
+          // Centred in the tab strip, which acts as the title bar. Expressed as
+          // the arithmetic rather than a literal so the dependency on the strip
+          // height is visible: if TabBar's h-12.5 changes, this must follow.
+          //
+          // Note the buttons are positioned relative to the *window*, not to the
+          // strip. Anything rendered above the strip shifts the strip down while
+          // leaving the buttons behind — which is what put them in the old
+          // remote-sync banner instead of among the tabs.
+          trafficLightPosition: {
+            x: 20,
+            y: Math.round(
+              TAB_STRIP_HEIGHT / 2 - MACOS_TRAFFIC_LIGHT_HEIGHT / 2,
+            ),
+          },
         }
       : process.platform === "win32"
         ? {
