@@ -75,8 +75,19 @@ Anything already holding those makes startup fail — the log shows
 `EADDRINUSE :::30008`.
 
 ```bash
-for p in 30001 30008; do
-  lsof -ti:$p | xargs -r kill -9
+# SIGTERM, not -9. Writes are buffered in memory and flushed 2s after the last
+# change (DatabaseSaveTrigger), and the backend force-saves on SIGTERM. A -9
+# skips that handler, so anything written in the last couple of seconds — a
+# credential you just saved, a login session row — is silently lost.
+for p in 30001 30008 30011 30012 30013; do
+  pids=$(lsof -ti:$p) || continue
+  kill $pids 2>/dev/null
+done
+sleep 3
+# Only escalate if something is still holding a port.
+for p in 30001 30008 30011 30012 30013; do
+  pids=$(lsof -ti:$p) || continue
+  kill -9 $pids 2>/dev/null
 done
 ```
 
@@ -104,7 +115,9 @@ curl -s http://127.0.0.1:30001/health     # expect {"status":"ok"}
 Kill it afterwards or the app cannot claim the port:
 
 ```bash
-lsof -ti:30001 | xargs -r kill -9
+# Again SIGTERM first, so the in-memory database is flushed to disk.
+kill $(lsof -ti:30001) 2>/dev/null; sleep 3
+lsof -ti:30001 | xargs kill -9 2>/dev/null
 ```
 
 Sanity-check what actually shipped in the bundle:
