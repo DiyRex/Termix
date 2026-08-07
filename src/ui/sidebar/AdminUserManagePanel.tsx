@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { whyCannotDeleteUser } from "@/lib/user-delete-guard";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
@@ -108,15 +109,29 @@ export function AdminUserManagePanel({
   onOpenHostTab,
   onUserDeleted,
   onTotpDisabled,
+  adminCount,
+  currentUsername,
 }: {
   user: AdminUser;
   roles: Role[];
+  /** Total admins; omit and the server enforces the last-admin rule instead. */
+  adminCount?: number;
+  /** Signed-in username; omit and the server enforces the self rule instead. */
+  currentUsername?: string;
   onBack: () => void;
   onOpenHostTab?: (host: Host) => void;
   onUserDeleted: () => void;
   onTotpDisabled: () => void;
 }) {
   const { t } = useTranslation();
+
+  // Matches the server: only your own account and the final admin are protected.
+  const deleteBlock = whyCannotDeleteUser({
+    targetUsername: user.username,
+    targetIsAdmin: user.isAdmin,
+    currentUsername,
+    adminCount,
+  });
   const [activeTab, setActiveTab] = useState<ManageTabId>("account");
   const [editor, setEditor] = useState<EditorState>(null);
   const [editorTab, setEditorTab] = useState("general");
@@ -1213,7 +1228,7 @@ export function AdminUserManagePanel({
                   variant="outline"
                   size="sm"
                   className="h-7 text-[10px] border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive self-start"
-                  disabled={deleteLoading || user.isAdmin}
+                  disabled={deleteLoading || !!deleteBlock}
                   onClick={() =>
                     setConfirmDialog({
                       message: t("admin.deleteUserConfirm", {
@@ -1226,9 +1241,11 @@ export function AdminUserManagePanel({
                   <Trash2 className="size-3" />
                   {t("admin.deleteUser", { username: user.username })}
                 </Button>
-                {user.isAdmin && (
+                {deleteBlock && (
                   <span className="text-[10px] text-muted-foreground">
-                    {t("admin.deleteUserAdminBlocked")}
+                    {deleteBlock === "self"
+                      ? t("admin.deleteUserSelfBlocked")
+                      : t("admin.deleteUserLastAdminBlocked")}
                   </span>
                 )}
               </div>

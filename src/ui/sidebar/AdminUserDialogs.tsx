@@ -1,4 +1,5 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { whyCannotDeleteUser } from "@/lib/user-delete-guard";
 import { useTranslation } from "react-i18next";
 import {
   assignRoleToUser,
@@ -155,6 +156,10 @@ type EditUserDialogProps = {
   handleToggleAdmin: (user: AdminUser) => void;
   handleRevokeUserSessions: (userId: string) => void;
   handleDeleteEditUser: () => void;
+  /** Total admins, so the last one can be protected without blocking the rest. */
+  adminCount?: number;
+  /** Signed-in username, so self-deletion can be blocked. */
+  currentUsername?: string;
 };
 
 export function AdminEditUserDialog({
@@ -169,7 +174,18 @@ export function AdminEditUserDialog({
   handleToggleAdmin,
   handleRevokeUserSessions,
   handleDeleteEditUser,
+  adminCount,
+  currentUsername,
 }: EditUserDialogProps) {
+  // Mirrors the server rule rather than the old "any admin is undeletable".
+  const deleteBlock = editUserTarget
+    ? whyCannotDeleteUser({
+        targetUsername: editUserTarget.username,
+        targetIsAdmin: editUserTarget.isAdmin,
+        currentUsername,
+        adminCount,
+      })
+    : null;
   const { t } = useTranslation();
 
   return (
@@ -368,13 +384,24 @@ export function AdminEditUserDialog({
               <div className="flex items-start gap-2.5 border border-destructive/30 bg-destructive/5 px-3 py-2.5">
                 <AlertCircle className="size-4 text-destructive shrink-0 mt-0.5" />
                 <span className="text-xs text-destructive">
-                  {t("admin.deleteUserWarning")}
+                  {deleteBlock === "self"
+                    ? t("admin.deleteUserSelfBlocked")
+                    : deleteBlock === "last-admin"
+                      ? t("admin.deleteUserLastAdminBlocked")
+                      : t("admin.deleteUserWarning")}
                 </span>
               </div>
               <Button
                 variant="outline"
                 className="w-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                disabled={editUserTarget.isAdmin || editUserLoading}
+                disabled={!!deleteBlock || editUserLoading}
+                title={
+                  deleteBlock === "self"
+                    ? t("admin.deleteUserSelfBlocked")
+                    : deleteBlock === "last-admin"
+                      ? t("admin.deleteUserLastAdminBlocked")
+                      : undefined
+                }
                 onClick={handleDeleteEditUser}
               >
                 <Trash2 className="size-3.5" />

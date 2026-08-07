@@ -222,7 +222,10 @@ export function AdminUsersSection({
                   variant="ghost"
                   size="icon"
                   className="size-6 text-muted-foreground hover:text-destructive"
-                  disabled={user.isAdmin}
+                  // Only the final admin is protected, matching the server.
+                  disabled={
+                    users.filter((u) => u.isAdmin).length <= 1 && user.isAdmin
+                  }
                   onClick={async () => {
                     try {
                       await deleteUser(user.username);

@@ -63,11 +63,14 @@ function makeUser(overrides: Partial<AdminUser> = {}): AdminUser {
 function renderPanel(
   user: AdminUser,
   callbacks: Partial<Record<string, () => void>> = {},
+  guard: { adminCount?: number; currentUsername?: string } = {},
 ) {
   return render(
     <AdminUserManagePanel
       user={user}
       roles={[]}
+      adminCount={guard.adminCount}
+      currentUsername={guard.currentUsername}
       onBack={callbacks.onBack ?? vi.fn()}
       onOpenHostTab={callbacks.onOpenHostTab as never}
       onUserDeleted={callbacks.onUserDeleted ?? vi.fn()}
@@ -196,14 +199,58 @@ describe("AdminUserManagePanel", () => {
     });
   });
 
-  it("blocks deleting admin accounts", async () => {
-    renderPanel(makeUser({ isAdmin: true }));
+  it("allows deleting an admin while another admin remains", async () => {
+    // Previously any admin was undeletable, so an administrator could never be
+    // removed however many there were.
+    renderPanel(
+      makeUser({ isAdmin: true }),
+      {},
+      {
+        adminCount: 2,
+        currentUsername: "someone-else",
+      },
+    );
+
+    await userEvent.click(screen.getByText("admin.manageTabDanger"));
+    const deleteBtn = screen
+      .getByText("admin.deleteUser")
+      .closest("button") as HTMLButtonElement;
+    expect(deleteBtn.disabled).toBe(false);
+  });
+
+  it("blocks deleting the last remaining admin", async () => {
+    renderPanel(
+      makeUser({ isAdmin: true }),
+      {},
+      {
+        adminCount: 1,
+        currentUsername: "someone-else",
+      },
+    );
 
     await userEvent.click(screen.getByText("admin.manageTabDanger"));
     const deleteBtn = screen
       .getByText("admin.deleteUser")
       .closest("button") as HTMLButtonElement;
     expect(deleteBtn.disabled).toBe(true);
-    expect(screen.getByText("admin.deleteUserAdminBlocked")).toBeTruthy();
+    expect(screen.getByText("admin.deleteUserLastAdminBlocked")).toBeTruthy();
+  });
+
+  it("blocks deleting your own account", async () => {
+    renderPanel(
+      makeUser({ isAdmin: true, username: "me" }),
+      {},
+      {
+        adminCount: 3,
+        currentUsername: "me",
+      },
+    );
+
+    await userEvent.click(screen.getByText("admin.manageTabDanger"));
+    const deleteBtn = screen
+      .getByText("admin.deleteUser")
+      .closest("button") as HTMLButtonElement;
+    expect(deleteBtn.disabled).toBe(true);
+    expect(screen.getByText("admin.deleteUserSelfBlocked")).toBeTruthy();
   });
 });

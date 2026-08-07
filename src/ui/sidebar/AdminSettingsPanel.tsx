@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { getUserInfo } from "@/main-axios";
 import { useTranslation } from "react-i18next";
 import {
   getUserList,
@@ -214,6 +215,26 @@ export function AdminSettingsPanel({
   const [manualUploading, setManualUploading] = useState(false);
 
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [currentUsername, setCurrentUsername] = useState<string | undefined>();
+
+  // Needed so the last administrator stays protected while every other admin
+  // can still be removed.
+  const adminCount = useMemo(
+    () => users.filter((u) => u.isAdmin).length,
+    [users],
+  );
+
+  useEffect(() => {
+    getUserInfo()
+      .then((info) =>
+        setCurrentUsername(
+          (info as { username?: string } | null)?.username ?? undefined,
+        ),
+      )
+      .catch(() => {
+        // Unknown signed-in user just means the server does the self check.
+      });
+  }, []);
   const [sessions, setSessions] = useState<AdminSession[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
@@ -905,6 +926,8 @@ export function AdminSettingsPanel({
         key={manageUser.id}
         user={manageUser}
         roles={roles}
+        adminCount={adminCount}
+        currentUsername={currentUsername}
         onBack={() => setManageUser(null)}
         onOpenHostTab={onOpenHostTab}
         onUserDeleted={() => {
@@ -1114,6 +1137,8 @@ export function AdminSettingsPanel({
         handleToggleAdmin={handleToggleAdmin}
         handleRevokeUserSessions={handleRevokeUserSessions}
         handleDeleteEditUser={handleDeleteEditUser}
+        adminCount={adminCount}
+        currentUsername={currentUsername}
       />
 
       <AdminLinkAccountDialog

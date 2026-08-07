@@ -3207,7 +3207,9 @@
       "saveError": "Failed to save role permissions",
       "save": "Save",
       "saving": "Saving..."
-    }
+    },
+    "deleteUserSelfBlocked": "You cannot delete the account you are signed in as.",
+    "deleteUserLastAdminBlocked": "This is the only administrator left. Promote another user first."
   },
   "newUi": {
     "sidebar": {
